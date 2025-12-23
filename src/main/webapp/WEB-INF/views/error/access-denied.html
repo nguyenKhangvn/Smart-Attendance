@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truy cập bị từ chối - Smart Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-card {
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-icon {
+            font-size: 100px;
+            color: #dc3545;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-10px);
+            }
+
+            75% {
+                transform: translateX(10px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card error-card">
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-exclamation-triangle error-icon mb-4"></i>
+                        <h1 class="display-4 fw-bold text-danger mb-3">403</h1>
+                        <h3 class="mb-3">Truy cập bị từ chối!</h3>
+                        <p class="text-muted mb-4">
+                            Xin lỗi, bạn không có quyền truy cập vào trang này.
+                            Vui lòng liên hệ quản trị viên nếu bạn cho rằng đây là lỗi.
+                        </p>
+
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Lưu ý:</strong> Trang này yêu cầu quyền truy cập đặc biệt.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a th:href="@{/}" class="btn btn-primary">
+                                <i class="fas fa-home"></i> Về trang chủ
+                            </a>
+                            <button onclick="history.back()" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </button>
+                            <a th:href="@{/logout}" class="btn btn-outline-danger">
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                            </a>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="text-muted small">
+                            <p class="mb-0">Nếu bạn cần trợ giúp, vui lòng liên hệ:</p>
+                            <p class="mb-0"><i class="fas fa-envelope"></i> support@smartattendance.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

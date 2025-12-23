@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Học Sinh</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+
+            <!-- SIDEBAR -->
+            <nav class="col-md-2 sidebar text-white"
+                style="min-height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)">
+                <div class="p-3 text-center">
+                    <i class="fas fa-user-shield fa-3x"></i>
+                    <h5 class="mt-2">Admin Panel</h5>
+                </div>
+
+                <ul class="nav flex-column px-3">
+                    <li class="nav-item">
+                        <a class="nav-link text-white" th:href="@{/admin/dashboard}">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" th:href="@{/admin/teachers}">
+                            <i class="fas fa-chalkboard-teacher me-2"></i>Giáo viên
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white active" style="background:rgba(255,255,255,0.2)"
+                            th:href="@{/admin/students}">
+                            <i class="fas fa-user-graduate me-2"></i>Học sinh
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" th:href="@{/admin/classes}">
+                            <i class="fas fa-school me-2"></i>Lớp học
+                        </a>
+                    </li>
+                    <li class="nav-item mt-5">
+                        <a class="nav-link text-white" th:href="@{/logout}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- MAIN -->
+            <main class="col-md-10 p-4">
+
+                <div class="d-flex justify-content-between mb-3">
+                    <h2><i class="fas fa-user-graduate me-2"></i>Quản lý Học Sinh</h2>
+                    <a th:href="@{/admin/students/create}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Thêm mới
+                    </a>
+                </div>
+
+                <!-- ALERT -->
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Mã SV</th>
+                                    <th>Username</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>SĐT</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                <!-- KHÔNG CÓ DATA -->
+                                <tr th:if="${#lists.isEmpty(students)}">
+                                    <td colspan="7" class="text-center text-muted">
+                                        <i class="fas fa-inbox fa-2x d-block mb-2"></i>
+                                        Chưa có học sinh nào
+                                    </td>
+                                </tr>
+
+                                <!-- CÓ DATA -->
+                                <tr th:each="student : ${students}">
+                                    <td th:text="${student.studentCode}"></td>
+                                    <td th:text="${student.username}"></td>
+                                    <td th:text="${student.fullName}"></td>
+                                    <td th:text="${student.email}"></td>
+                                    <td th:text="${student.phoneNumber}"></td>
+
+                                    <td>
+                                        <span th:if="${student.isActive}" class="badge bg-success">Hoạt động</span>
+                                        <span th:unless="${student.isActive}" class="badge bg-secondary">Vô hiệu</span>
+                                    </td>
+
+                                    <td>
+                                        <a th:href="@{/admin/students/edit/{id}(id=${student.id})}"
+                                            class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+
+                                        <button class="btn btn-danger btn-sm"
+                                            th:attr="data-id=${student.id},data-name=${student.fullName}"
+                                            onclick="confirmDelete(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="deleteForm" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Xác nhận xóa</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn có chắc chắn muốn xóa <strong id="studentName"></strong>?
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button class="btn btn-danger" type="submit">Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function confirmDelete(btn) {
+            const id = btn.getAttribute("data-id");
+            const name = btn.getAttribute("data-name");
+
+            document.getElementById("studentName").innerText = name;
+            document.getElementById("deleteForm").action = "/admin/students/delete/" + id;
+
+            new bootstrap.Modal(document.getElementById("deleteModal")).show();
+        }
+    </script>
+</body>
+
+</html>

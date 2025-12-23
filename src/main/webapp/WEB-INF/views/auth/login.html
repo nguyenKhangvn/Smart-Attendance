@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Attendance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card login-card">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-clipboard-check fa-4x text-primary mb-3"></i>
+                            <h3 class="fw-bold">Smart Attendance</h3>
+                            <p class="text-muted">Đăng nhập vào hệ thống</p>
+                        </div>
+
+                        <div th:if="${param.error}" class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> Tên đăng nhập hoặc mật khẩu không đúng!
+                        </div>
+
+                        <div th:if="${param.logout}" class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Bạn đã đăng xuất thành công!
+                        </div>
+
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user"></i> Tên đăng nhập
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username"
+                                    placeholder="Nhập tên đăng nhập" required autofocus>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock"></i> Mật khẩu
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Nhập mật khẩu" required>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
+                                <label class="form-check-label" for="remember-me">
+                                    Ghi nhớ đăng nhập
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                                <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                            </button>
+
+                            <div class="text-center">
+                                <span class="text-muted">Chưa có tài khoản?</span>
+                                <a th:href="@{/register}" class="text-decoration-none ms-1">
+                                    <i class="fas fa-user-plus"></i> Đăng ký ngay
+                                </a>
+                            </div>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="text-center">
+                            <a th:href="@{/}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

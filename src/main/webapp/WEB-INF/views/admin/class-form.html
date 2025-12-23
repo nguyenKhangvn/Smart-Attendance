@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${classEntity.id != null ? 'Chỉnh sửa lớp học' : 'Thêm lớp học'}">Admin - Lớp học</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="p-3 border-bottom">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Admin Panel</h5>
+                </div>
+                <nav class="nav flex-column">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">
+                        <i class="fas fa-home me-2"></i>Dashboard
+                    </a>
+                    <a th:href="@{/admin/teachers}" class="nav-link">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Quản lý Giáo viên
+                    </a>
+                    <a th:href="@{/admin/students}" class="nav-link">
+                        <i class="fas fa-user-graduate me-2"></i>Quản lý Học sinh
+                    </a>
+                    <a th:href="@{/admin/classes}" class="nav-link active">
+                        <i class="fas fa-school me-2"></i>Quản lý Lớp học
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 th:text="${classEntity.id != null ? 'Chỉnh sửa lớp học' : 'Thêm lớp học mới'}">
+                        <i class="fas fa-school me-2"></i>Thêm lớp học mới
+                    </h2>
+                    <a th:href="@{/admin/classes}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <form
+                            th:action="@{${classEntity.id != null ? '/admin/classes/update/' + classEntity.id : '/admin/classes/create'}}"
+                            method="post" th:object="${classEntity}">
+                            <div class="row">
+                                <!-- Class Code -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mã lớp <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{classCode}"
+                                        placeholder="VD: CS101" required>
+                                </div>
+
+                                <!-- Subject Name -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tên môn học <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{subjectName}"
+                                        placeholder="VD: Lập trình Java" required>
+                                </div>
+
+                                <!-- Semester -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Học kỳ <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{semester}"
+                                        placeholder="VD: HK1 2023-2024" required>
+                                </div>
+
+                                <!-- Teacher (only on create) -->
+                                <div class="col-md-6 mb-3" th:if="${classEntity.id == null}">
+                                    <label class="form-label">Giáo viên phụ trách <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" name="teacherId" required>
+                                        <option value="">-- Chọn giáo viên --</option>
+                                        <option th:each="teacher : ${teachers}" th:value="${teacher.id}"
+                                            th:text="${teacher.fullName + ' (' + teacher.username + ')'}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Teacher (readonly on edit) -->
+                                <div class="col-md-6 mb-3" th:if="${classEntity.id != null}">
+                                    <label class="form-label">Giáo viên phụ trách</label>
+                                    <input type="text" class="form-control"
+                                        th:value="${classEntity.teacher.fullName + ' (' + classEntity.teacher.username + ')'}"
+                                        readonly>
+                                    <small class="text-muted">Không thể thay đổi giáo viên sau khi tạo</small>
+                                </div>
+
+                                <!-- Schedule Info -->
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Thông tin lịch học</label>
+                                    <input type="text" class="form-control" th:field="*{scheduleInfo}"
+                                        placeholder="VD: Thứ 2, 7:00 - 9:00">
+                                </div>
+
+                                <!-- Description -->
+                                <div class="col-12 mb-3">
+                                    <label class="form-label">Mô tả</label>
+                                    <textarea class="form-control" th:field="*{description}" rows="3"
+                                        placeholder="Mô tả chi tiết về lớp học"></textarea>
+                                </div>
+
+                                <!-- Active Status (only on edit) -->
+                                <div class="col-12 mb-3" th:if="${classEntity.id != null}">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" th:field="*{isActive}"
+                                            id="isActive">
+                                        <label class="form-check-label" for="isActive">
+                                            Lớp đang hoạt động
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>
+                                    <span th:text="${classEntity.id != null ? 'Cập nhật' : 'Tạo mới'}">Tạo mới</span>
+                                </button>
+                                <a th:href="@{/admin/classes}" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-times me-2"></i>Hủy bỏ
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

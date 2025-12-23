@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo buổi học mới</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div th:replace="~{layout :: navbar}"></div>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-calendar-plus me-2"></i>Tạo Buổi Học Mới</h2>
+                    <a th:href="@{/teacher/classes/{id}(id=${classEntity.id})}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Thông tin buổi học
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-book me-2"></i>
+                            <strong>Lớp học:</strong> <span th:text="${classEntity.subjectName}"></span>
+                            (<span th:text="${classEntity.classCode}"></span>)
+                        </div>
+
+                        <form th:action="@{/teacher/sessions/create}" method="post">
+                            <input type="hidden" name="classId" th:value="${classEntity.id}">
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-heading me-2"></i>Tên buổi học <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" name="sessionName"
+                                    placeholder="VD: Buổi 1: Giới thiệu môn học" required>
+                                <small class="form-text text-muted">
+                                    Đặt tên rõ ràng để sinh viên dễ nhận biết
+                                </small>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-calendar me-2"></i>Ngày học <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" name="sessionDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock me-2"></i>Giờ bắt đầu <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="time" class="form-control" name="sessionTime" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-hourglass-half me-2"></i>Thời lượng (phút) <span
+                                        class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="durationMinutes" required>
+                                    <option value="">-- Chọn thời lượng --</option>
+                                    <option value="45">45 phút (1 tiết)</option>
+                                    <option value="90" selected>90 phút (2 tiết)</option>
+                                    <option value="135">135 phút (3 tiết)</option>
+                                    <option value="180">180 phút (4 tiết)</option>
+                                    <option value="custom">Tùy chỉnh</option>
+                                </select>
+                                <input type="number" class="form-control mt-2 d-none" id="customDuration" min="15"
+                                    max="300" placeholder="Nhập số phút">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-sticky-note me-2"></i>Ghi chú
+                                </label>
+                                <textarea class="form-control" name="notes" rows="3"
+                                    placeholder="Nội dung buổi học, yêu cầu chuẩn bị, v.v..."></textarea>
+                            </div>
+
+                            <hr>
+
+                            <h6 class="mb-3"><i class="fas fa-qrcode me-2"></i>Cài đặt Điểm Danh</h6>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-stopwatch me-2"></i>Cho phép điểm danh trước giờ học (phút)
+                                    </label>
+                                    <input type="number" class="form-control" name="allowedMinutesBefore" value="10"
+                                        min="0" max="60">
+                                    <small class="form-text text-muted">Sinh viên có thể điểm danh trước giờ
+                                        học</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-stopwatch me-2"></i>Cho phép điểm danh sau giờ kết thúc
+                                        (phút)
+                                    </label>
+                                    <input type="number" class="form-control" name="allowedMinutesAfter" value="15"
+                                        min="0" max="60">
+                                    <small class="form-text text-muted">Điểm danh muộn nhưng vẫn được chấp
+                                        nhận</small>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Lưu ý:</strong> Sau khi tạo buổi học, bạn cần tạo QR code để sinh viên có thể
+                                điểm danh.
+                            </div>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a th:href="@{/teacher/classes/{id}(id=${classEntity.id})}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Hủy
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Tạo Buổi Học
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle custom duration
+        document.querySelector('select[name="durationMinutes"]').addEventListener('change', function () {
+            const customInput = document.getElementById('customDuration');
+            if (this.value === 'custom') {
+                customInput.classList.remove('d-none');
+                customInput.required = true;
+                customInput.name = 'durationMinutes';
+                this.name = '';
+            } else {
+                customInput.classList.add('d-none');
+                customInput.required = false;
+                customInput.name = '';
+                this.name = 'durationMinutes';
+            }
+        });
+
+        // Set default date to today
+        document.querySelector('input[name="sessionDate"]').valueAsDate = new Date();
+    </script>
+</body>
+
+</html>

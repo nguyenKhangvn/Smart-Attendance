@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quản lý Lớp học</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+        }
+
+        .sidebar a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 20px;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .sidebar a:hover,
+        .sidebar a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .badge {
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar p-0">
+                <div class="p-3 border-bottom">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Admin Panel</h5>
+                </div>
+                <nav class="nav flex-column">
+                    <a th:href="@{/admin/dashboard}" class="nav-link">
+                        <i class="fas fa-home me-2"></i>Dashboard
+                    </a>
+                    <a th:href="@{/admin/teachers}" class="nav-link">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>Quản lý Giáo viên
+                    </a>
+                    <a th:href="@{/admin/students}" class="nav-link">
+                        <i class="fas fa-user-graduate me-2"></i>Quản lý Học sinh
+                    </a>
+                    <a th:href="@{/admin/classes}" class="nav-link active">
+                        <i class="fas fa-school me-2"></i>Quản lý Lớp học
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="fas fa-school me-2"></i>Quản lý Lớp học</h2>
+                    <a th:href="@{/admin/classes/create}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Tạo lớp mới
+                    </a>
+                </div>
+
+                <!-- Alert Messages -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Mã lớp</th>
+                                        <th>Môn học</th>
+                                        <th>Giáo viên</th>
+                                        <th>Học kỳ</th>
+                                        <th>Số học sinh</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:if="${classes.empty}">
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            Chưa có lớp học nào
+                                        </td>
+                                    </tr>
+                                    <tr th:each="classEntity : ${classes}">
+                                        <td>
+                                            <strong th:text="${classEntity.classCode}"></strong>
+                                        </td>
+                                        <td th:text="${classEntity.subjectName}"></td>
+                                        <td>
+                                            <i class="fas fa-user-tie me-1"></i>
+                                            <span th:text="${classEntity.teacher.fullName}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info" th:text="${classEntity.semester}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-users me-1"></i>
+                                                <span th:text="${classEntity.students.size()}"></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${classEntity.isActive}" class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Hoạt động
+                                            </span>
+                                            <span th:unless="${classEntity.isActive}" class="badge bg-secondary">
+                                                <i class="fas fa-ban me-1"></i>Tạm dừng
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a th:href="@{/admin/classes/{id}(id=${classEntity.id})}"
+                                                    class="btn btn-info btn-sm" title="Chi tiết">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a th:href="@{/admin/classes/edit/{id}(id=${classEntity.id})}"
+                                                    class="btn btn-warning btn-sm" title="Sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form
+                                                    th:action="@{/admin/classes/toggle-status/{id}(id=${classEntity.id})}"
+                                                    method="post" class="d-inline">
+                                                    <button type="submit"
+                                                        th:class="${classEntity.isActive ? 'btn btn-secondary btn-sm' : 'btn btn-success btn-sm'}"
+                                                        th:title="${classEntity.isActive ? 'Tạm dừng' : 'Kích hoạt'}">
+                                                        <i
+                                                            th:class="${classEntity.isActive ? 'fas fa-pause' : 'fas fa-play'}"></i>
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-danger btn-sm"
+                                                    th:attr="data-class-id=${classEntity.id},data-class-name=${classEntity.classCode}"
+                                                    onclick="confirmDelete(this)" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Xác nhận xóa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Bạn có chắc chắn muốn xóa lớp <strong id="deleteClassName"></strong>?</p>
+                    <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Hành động này không thể hoàn
+                        tác!</p>
+                </div>
+                <div class="modal-footer">
+                    <form id="deleteForm" method="post">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const contextPath = /*[[@{/}]]*/ '/';
+
+        function confirmDelete(button) {
+            const classId = button.getAttribute('data-class-id');
+            const className = button.getAttribute('data-class-name');
+
+            document.getElementById('deleteClassName').textContent = className;
+            document.getElementById('deleteForm').action = contextPath + 'admin/classes/delete/' + classId;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+        /*]]*/
+    </script>
+</body>
+
+</html>
