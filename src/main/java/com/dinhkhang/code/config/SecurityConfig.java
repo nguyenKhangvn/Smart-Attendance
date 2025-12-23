@@ -1,6 +1,5 @@
 package com.dinhkhang.code.config;
 
-import com.dinhkhang.code.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import com.dinhkhang.code.service.IUserService;
 
 @Configuration
 @EnableWebSecurity
@@ -46,47 +46,14 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                // Vô hiệu hóa tất cả security - cho phép truy cập mọi route mà không cần đăng nhập
                 http
                                 .authorizeHttpRequests(auth -> auth
-                                                // Public resources
-                                                .requestMatchers("/resources/**", "/css/**", "/js/**", "/images/**")
-                                                .permitAll()
-                                                .requestMatchers("/", "/login", "/register").permitAll()
-
-                                                // API endpoints (for mobile/ajax)
-                                                .requestMatchers("/api/attendance/checkin").hasRole("STUDENT")
-                                                .requestMatchers("/api/qr/**").hasRole("TEACHER")
-
-                                                // Teacher pages
-                                                .requestMatchers("/teacher/**").hasRole("TEACHER")
-
-                                                // Student pages
-                                                .requestMatchers("/student/**").hasRole("STUDENT")
-
-                                                // Admin pages
-                                                .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                                                // All other requests require authentication
-                                                .anyRequest().authenticated())
-                                .formLogin(form -> form
-                                                .loginPage("/login")
-                                                .loginProcessingUrl("/login")
-                                                .successHandler(successHandler)
-                                                .failureUrl("/login?error=true")
-                                                .usernameParameter("username")
-                                                .passwordParameter("password")
-                                                .permitAll())
-                                .logout(logout -> logout
-                                                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                                                .logoutSuccessUrl("/login?logout=true")
-                                                .invalidateHttpSession(true)
-                                                .deleteCookies("JSESSIONID")
-                                                .permitAll())
-                                .exceptionHandling(ex -> ex
-                                                .accessDeniedPage("/access-denied"))
-                                .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers("/api/**") // Disable CSRF for API endpoints
-                                );
+                                                .anyRequest().permitAll())
+                                .csrf(csrf -> csrf.disable())
+                                .formLogin(form -> form.disable())
+                                .logout(logout -> logout.disable())
+                                .httpBasic(basic -> basic.disable());
 
                 return http.build();
         }

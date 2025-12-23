@@ -1,5 +1,6 @@
 package com.dinhkhang.code.controller;
 
+import com.dinhkhang.code.config.DefaultUserProvider;
 import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassEntity;
 import com.dinhkhang.code.entity.User;
@@ -7,7 +8,6 @@ import com.dinhkhang.code.service.IAttendanceService;
 import com.dinhkhang.code.service.IClassService;
 import com.dinhkhang.code.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,10 +29,18 @@ public class StudentController {
     @Autowired
     private IUserService userService;
 
+    @Autowired
+    private DefaultUserProvider defaultUserProvider;
+
     @GetMapping("/dashboard")
-    public String dashboard(Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public String dashboard(Model model) {
+        // Sử dụng học sinh mặc định (có thể là null nếu chưa có học sinh nào)
+        User student = defaultUserProvider.getDefaultStudent();
+        
+        if (student == null) {
+            model.addAttribute("message", "Chưa có học sinh nào trong hệ thống");
+            return "student/dashboard";
+        }
 
         List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
 
@@ -43,9 +51,14 @@ public class StudentController {
     }
 
     @GetMapping("/classes")
-    public String listClasses(Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public String listClasses(Model model) {
+        // Sử dụng học sinh mặc định
+        User student = defaultUserProvider.getDefaultStudent();
+        
+        if (student == null) {
+            model.addAttribute("message", "Chưa có học sinh nào trong hệ thống");
+            return "student/classes";
+        }
 
         List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
 
@@ -55,9 +68,14 @@ public class StudentController {
     }
 
     @GetMapping("/classes/{id}")
-    public String viewClass(@PathVariable Long id, Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public String viewClass(@PathVariable Long id, Model model) {
+        // Sử dụng học sinh mặc định
+        User student = defaultUserProvider.getDefaultStudent();
+        
+        if (student == null) {
+            model.addAttribute("message", "Chưa có học sinh nào trong hệ thống");
+            return "student/class-detail";
+        }
 
         ClassEntity classEntity = classService.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -76,9 +94,14 @@ public class StudentController {
     }
 
     @GetMapping("/attendance-history")
-    public String attendanceHistory(Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+    public String attendanceHistory(Model model) {
+        // Sử dụng học sinh mặc định
+        User student = defaultUserProvider.getDefaultStudent();
+        
+        if (student == null) {
+            model.addAttribute("message", "Chưa có học sinh nào trong hệ thống");
+            return "student/attendance-history";
+        }
 
         List<AttendanceRecord> records = attendanceService.getStudentAttendance(student.getId(), null);
 

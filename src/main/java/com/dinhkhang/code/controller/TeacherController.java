@@ -1,5 +1,21 @@
 package com.dinhkhang.code.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.dinhkhang.code.config.DefaultUserProvider;
 import com.dinhkhang.code.dto.StudentImportDTO;
 import com.dinhkhang.code.entity.ClassEntity;
 import com.dinhkhang.code.entity.ClassSession;
@@ -9,16 +25,6 @@ import com.dinhkhang.code.service.IClassService;
 import com.dinhkhang.code.service.IClassSessionService;
 import com.dinhkhang.code.service.IQRService;
 import com.dinhkhang.code.service.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
 
 @Controller
 @RequestMapping("/teacher")
@@ -39,11 +45,14 @@ public class TeacherController {
     @Autowired
     private ExcelImportService excelImportService;
 
+    @Autowired
+    private DefaultUserProvider defaultUserProvider;
+
     @GetMapping("/dashboard")
     @Transactional(readOnly = true)
-    public String dashboard(Model model, Authentication authentication) {
-        User teacher = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public String dashboard(Model model) {
+        // Sử dụng giảng viên mặc định vì không cần đăng nhập
+        User teacher = defaultUserProvider.getDefaultTeacher();
 
         List<ClassEntity> classes = classService.getClassesByTeacher(teacher.getId());
 
@@ -65,11 +74,12 @@ public class TeacherController {
 
         return "teacher/dashboard";
     }
+    
 
     @GetMapping("/classes")
-    public String listClasses(Model model, Authentication authentication) {
-        User teacher = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public String listClasses(Model model) {
+        // Sử dụng giảng viên mặc định vì không cần đăng nhập
+        User teacher = defaultUserProvider.getDefaultTeacher();
 
         List<ClassEntity> classes = classService.getClassesByTeacher(teacher.getId());
 
@@ -85,9 +95,9 @@ public class TeacherController {
     }
 
     @PostMapping("/classes/create")
-    public String createClass(@ModelAttribute ClassEntity classEntity, Authentication authentication) {
-        User teacher = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public String createClass(@ModelAttribute ClassEntity classEntity) {
+        // Sử dụng giảng viên mặc định vì không cần đăng nhập
+        User teacher = defaultUserProvider.getDefaultTeacher();
 
         classService.createClass(classEntity, teacher.getId());
 
