@@ -41,11 +41,11 @@
         <div>
           <h2>
             <i class="fas fa-book me-2"></i
-            ><span th:text="${classEntity.subjectName}"></span>
+            ><span th:text="${classEntity?.subjectName}"></span>
           </h2>
           <p class="text-muted mb-0">
             <i class="fas fa-code me-2"></i>Mã lớp:
-            <strong th:text="${classEntity.classCode}"></strong>
+            <strong th:text="${classEntity?.classCode}"></strong>
             <span class="ms-3"
               ><i class="fas fa-calendar me-2"></i>Học kỳ:
               <span th:text="${classEntity.semester}"></span

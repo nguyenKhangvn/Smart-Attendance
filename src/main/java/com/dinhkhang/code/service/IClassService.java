@@ -27,4 +27,6 @@ public interface IClassService {
     void deleteClass(Long id, Long teacherId);
 
     List<ClassEntity> getAllClasses();
+
+    ClassEntity getClassDetail(Long id);
 }

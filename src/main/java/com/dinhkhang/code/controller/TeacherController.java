@@ -78,41 +78,43 @@ public class TeacherController {
         return "teacher/classes";
     }
 
-    @GetMapping("/classes/create")
-    public String createClassForm(Model model) {
-        model.addAttribute("classEntity", new ClassEntity());
-        return "teacher/class-form";
-    }
-
     @PostMapping("/classes/create")
-    public String createClass(@ModelAttribute ClassEntity classEntity, Authentication authentication, Model model) {
+    public String createClass(
+            @ModelAttribute("classEntity") ClassEntity classEntity,
+            Authentication authentication,
+            RedirectAttributes redirectAttributes) {
+
         try {
             User teacher = userService.findByUsername(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo viên"));
 
             classService.createClass(classEntity, teacher.getId());
 
+            redirectAttributes.addFlashAttribute("success", "Tạo lớp học thành công");
             return "redirect:/teacher/classes";
+
         } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            model.addAttribute("classEntity", classEntity);
-            return "teacher/class-form";
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("classEntity", classEntity);
+            return "redirect:/teacher/classes/create";
         }
     }
 
+
+
     @GetMapping("/classes/{id}")
     public String viewClass(@PathVariable Long id, Model model) {
-        ClassEntity classEntity = classService.findById(id)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        List<ClassSession> sessions = classSessionService.getSessionsByClass(id);
+        ClassEntity classEntity = classService.getClassDetail(id);
 
         model.addAttribute("classEntity", classEntity);
-        model.addAttribute("sessions", sessions);
         model.addAttribute("students", classEntity.getStudents());
+        model.addAttribute("sessions", classSessionService.getSessionsByClass(id));
 
         return "teacher/class-detail";
     }
+
+
 
     @GetMapping("/classes/{id}/edit")
     public String editClassForm(@PathVariable Long id, Model model) {

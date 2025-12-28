@@ -80,6 +80,15 @@ public class ClassService implements IClassService {
         classEntity.getStudents().add(student);
         classRepository.save(classEntity);
     }
+    @Transactional(readOnly = true)
+    public ClassEntity getClassDetail(Long id) {
+        ClassEntity classEntity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        classEntity.getStudents().size();
+
+        return classEntity;
+    }
 
     public void removeStudentFromClass(Long classId, Long studentId) {
         ClassEntity classEntity = classRepository.findById(classId)
