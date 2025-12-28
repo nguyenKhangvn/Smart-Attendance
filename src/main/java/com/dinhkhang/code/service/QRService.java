@@ -34,8 +34,8 @@ public class QRService implements IQRService {
         ClassSession classSession = classSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Class session not found"));
 
-        // Generate unique token
-        String tokenSecret = UUID.randomUUID().toString();
+        // Generate unique token BẢO MẬT - 32 characters
+        String tokenSecret = java.util.UUID.randomUUID().toString().replace("-", "");
 
         // Create QR session
         QRSession qrSession = new QRSession();
@@ -48,8 +48,11 @@ public class QRService implements IQRService {
 
         qrSession = qrSessionRepository.save(qrSession);
 
-        // Generate QR code
-        String qrContent = String.format("%d|%s", qrSession.getId(), tokenSecret);
+        // ✅ QR CHỈ CHỨA: sessionId + token (KHÔNG chứa thông tin sinh viên)
+        String qrContent = String.format("{\"sessionId\":%d,\"token\":\"%s\"}",
+            qrSession.getClassSession().getId(),
+            tokenSecret);
+
         String qrCodeBase64 = generateQRCodeImage(qrContent);
 
         // Calculate expiration time

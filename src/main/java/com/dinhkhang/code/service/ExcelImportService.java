@@ -114,17 +114,24 @@ public class ExcelImportService {
 
         for (StudentImportDTO dto : studentDTOs) {
             try {
+                // Kiểm tra email đã tồn tại chưa
+                if (userService.findByUsername(dto.getUsername()).isPresent()) {
+                    System.out.println("Username already exists, skipping: " + dto.getUsername());
+                    continue;
+                }
+
                 User user = new User();
                 user.setStudentCode(dto.getStudentCode());
                 user.setFullName(dto.getFullName());
                 user.setEmail(dto.getEmail());
+                user.setDateOfBirth(dto.getDateOfBirth()); // THÊM MỚI
                 user.setPhoneNumber(dto.getPhoneNumber());
                 user.setUsername(dto.getUsername());
 
-                // Set default password if not provided
+                // Set default password = 123456
                 String password = dto.getPassword();
                 if (password == null || password.isEmpty()) {
-                    password = "123456"; // Default password
+                    password = "123456";
                 }
                 user.setPassword(password);
                 user.setRole(User.Role.STUDENT);
@@ -133,8 +140,7 @@ public class ExcelImportService {
                 User created = userService.createUser(user);
                 createdUsers.add(created);
             } catch (Exception e) {
-                // Log error and continue with next student
-                System.err.println("Error importing student: " + dto.getStudentCode() + " - " + e.getMessage());
+                System.err.println("Error importing student: " + dto.getEmail() + " - " + e.getMessage());
             }
         }
 

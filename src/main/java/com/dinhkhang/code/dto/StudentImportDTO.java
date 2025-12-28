@@ -1,34 +1,32 @@
 package com.dinhkhang.code.dto;
 
+import java.time.LocalDate;
+
 public class StudentImportDTO {
-    private String studentCode;
     private String fullName;
     private String email;
-    private String phoneNumber;
+    private LocalDate dateOfBirth;  // THÊM MỚI
+    private String studentCode;
     private String username;
     private String password;
+    private String phoneNumber;
 
+    // Constructors
     public StudentImportDTO() {
     }
 
     public StudentImportDTO(String studentCode, String fullName, String email, String phoneNumber, String username,
-            String password) {
+            String password, LocalDate dateOfBirth) {
         this.studentCode = studentCode;
         this.fullName = fullName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.username = username;
         this.password = password;
+        this.dateOfBirth = dateOfBirth;
     }
 
-    public String getStudentCode() {
-        return studentCode;
-    }
-
-    public void setStudentCode(String studentCode) {
-        this.studentCode = studentCode;
-    }
-
+    // Getters and Setters
     public String getFullName() {
         return fullName;
     }
@@ -45,12 +43,20 @@ public class StudentImportDTO {
         this.email = email;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getStudentCode() {
+        return studentCode;
+    }
+
+    public void setStudentCode(String studentCode) {
+        this.studentCode = studentCode;
     }
 
     public String getUsername() {
@@ -67,5 +73,13 @@ public class StudentImportDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phonePhone) {
+        this.phoneNumber = phonePhone;
     }
 }

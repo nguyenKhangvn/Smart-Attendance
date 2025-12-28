@@ -1,6 +1,7 @@
 package com.dinhkhang.code.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,6 +35,10 @@ public class User {
 
     @Column(name = "student_code", unique = true, length = 20)
     private String studentCode; // Chỉ dùng cho sinh viên
+
+    // THÊM MỚI: Ngày sinh cho sinh viên
+    @Column(name = "date_of_birth")
+    private java.time.LocalDate dateOfBirth;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -70,7 +75,7 @@ public class User {
     }
 
     public User(Long id, String username, String password, String fullName, String email,
-            String phoneNumber, Role role, String studentCode, LocalDateTime createdAt,
+            String phoneNumber, Role role, String studentCode, LocalDate dateOfBirth, LocalDateTime createdAt,
             LocalDateTime updatedAt, Boolean isActive, Set<ClassEntity> enrolledClasses,
             Set<ClassEntity> teachingClasses, Set<AttendanceRecord> attendanceRecords) {
         this.id = id;
@@ -81,6 +86,7 @@ public class User {
         this.phoneNumber = phoneNumber;
         this.role = role;
         this.studentCode = studentCode;
+        this.dateOfBirth = dateOfBirth;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
@@ -152,6 +158,14 @@ public class User {
 
     public void setStudentCode(String studentCode) {
         this.studentCode = studentCode;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     public LocalDateTime getCreatedAt() {

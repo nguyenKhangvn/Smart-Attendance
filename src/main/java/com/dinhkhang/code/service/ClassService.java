@@ -49,6 +49,23 @@ public class ClassService implements IClassService {
         return classRepository.save(classEntity);
     }
 
+    public ClassEntity updateClass(Long id, ClassEntity updatedClass, Long teacherId) {
+        ClassEntity classEntity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        // SECURITY: Verify ownership
+        if (!classEntity.getTeacher().getId().equals(teacherId)) {
+            throw new RuntimeException("Access denied: You don't own this class");
+        }
+
+        classEntity.setSubjectName(updatedClass.getSubjectName());
+        classEntity.setDescription(updatedClass.getDescription());
+        classEntity.setSemester(updatedClass.getSemester());
+        classEntity.setScheduleInfo(updatedClass.getScheduleInfo());
+
+        return classRepository.save(classEntity);
+    }
+
     public void addStudentToClass(Long classId, Long studentId) {
         ClassEntity classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -98,9 +115,23 @@ public class ClassService implements IClassService {
         classRepository.save(classEntity);
     }
 
+    public void deleteClass(Long id, Long teacherId) {
+        ClassEntity classEntity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        // SECURITY: Verify ownership
+        if (!classEntity.getTeacher().getId().equals(teacherId)) {
+            throw new RuntimeException("Access denied: You don't own this class");
+        }
+
+        classEntity.setIsActive(false);
+        classRepository.save(classEntity);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<ClassEntity> getAllClasses() {
         return classRepository.findAll();
     }
 }
+

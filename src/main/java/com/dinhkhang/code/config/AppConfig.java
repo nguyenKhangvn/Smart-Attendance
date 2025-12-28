@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -25,6 +26,7 @@ import java.util.Properties;
 @ComponentScan(basePackages = "com.dinhkhang.code", excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class))
 @EnableJpaRepositories(basePackages = "com.dinhkhang.code.repository")
 @EnableTransactionManagement
+@EnableScheduling  // Enable scheduled tasks
 @PropertySource("classpath:application.properties")
 public class AppConfig {
 

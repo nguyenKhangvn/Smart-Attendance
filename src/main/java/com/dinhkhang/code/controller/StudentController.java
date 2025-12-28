@@ -87,3 +87,5 @@ public class StudentController {
         return "student/attendance-history";
     }
 }
+
+

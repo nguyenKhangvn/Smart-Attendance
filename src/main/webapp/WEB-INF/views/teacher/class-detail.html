@@ -1,276 +1,409 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="'Chi tiết lớp - ' + ${classEntity.subjectName}">Chi tiết lớp</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="'Chi tiết lớp - ' + ${classEntity.subjectName}">
+      Chi tiết lớp
+    </title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
     <style>
-        .section-title {
-            border-left: 4px solid #007bff;
-            padding-left: 15px;
-            margin: 30px 0 20px 0;
-        }
+      .section-title {
+        border-left: 4px solid #007bff;
+        padding-left: 15px;
+        margin: 30px 0 20px 0;
+      }
 
-        .qr-modal {
-            text-align: center;
-        }
+      .qr-modal {
+        text-align: center;
+      }
 
-        .qr-image {
-            max-width: 400px;
-            margin: 20px auto;
-        }
+      .qr-image {
+        max-width: 400px;
+        margin: 20px auto;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div th:replace="~{layout :: navbar}"></div>
+
     <div class="container mt-4">
-        <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2><i class="fas fa-book me-2"></i><span th:text="${classEntity.subjectName}"></span></h2>
-                <p class="text-muted mb-0">
-                    <i class="fas fa-code me-2"></i>Mã lớp: <strong th:text="${classEntity.classCode}"></strong>
-                    <span class="ms-3"><i class="fas fa-calendar me-2"></i>Học kỳ: <span
-                            th:text="${classEntity.semester}"></span></span>
-                </p>
-            </div>
-            <a th:href="@{/teacher/classes}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Quay lại
-            </a>
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>
+            <i class="fas fa-book me-2"></i
+            ><span th:text="${classEntity.subjectName}"></span>
+          </h2>
+          <p class="text-muted mb-0">
+            <i class="fas fa-code me-2"></i>Mã lớp:
+            <strong th:text="${classEntity.classCode}"></strong>
+            <span class="ms-3"
+              ><i class="fas fa-calendar me-2"></i>Học kỳ:
+              <span th:text="${classEntity.semester}"></span
+            ></span>
+          </p>
         </div>
+        <a th:href="@{/teacher/classes}" class="btn btn-outline-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Quay lại
+        </a>
+      </div>
 
-        <!-- Alerts -->
-        <div th:if="${success}" class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      <!-- Alerts -->
+      <div
+        th:if="${success}"
+        class="alert alert-success alert-dismissible fade show"
+      >
+        <i class="fas fa-check-circle me-2"></i
+        ><span th:text="${success}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      <div
+        th:if="${error}"
+        class="alert alert-danger alert-dismissible fade show"
+      >
+        <i class="fas fa-exclamation-triangle me-2"></i
+        ><span th:text="${error}"></span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+
+      <!-- Students Section -->
+      <h4 class="section-title mb-4">
+        <i class="fas fa-users me-2"></i>Danh sách Học sinh
+        <span class="badge bg-info ms-2" th:text="${#lists.size(students)}"
+          >0</span
+        >
+      </h4>
+
+      <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-success text-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="fas fa-user-plus me-2"></i>Thêm học sinh vào lớp
+            </h5>
+            <button
+              class="btn btn-sm btn-light"
+              data-bs-toggle="collapse"
+              data-bs-target="#addStudentSection"
+            >
+              <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
         </div>
-        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <!-- Students Section -->
-        <h4 class="section-title"><i class="fas fa-users me-2"></i>Danh sách Học Sinh (<span
-                th:text="${#lists.size(students)}">0</span>)</h4>
-
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-user-plus me-2"></i>Thêm học sinh</span>
-                    <button class="btn btn-sm btn-light" data-bs-toggle="collapse" data-bs-target="#addStudentSection">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="addStudentSection" class="collapse show">
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Import from Excel -->
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-file-excel me-2"></i>Import từ Excel</h6>
-                            <form th:action="@{/teacher/classes/{id}/import-students(id=${classEntity.id})}"
-                                method="post" enctype="multipart/form-data" class="mb-3">
-                                <div class="input-group">
-                                    <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-upload me-2"></i>Upload
-                                    </button>
-                                </div>
-                                <small class="text-muted">
-                                    <i class="fas fa-info-circle me-1"></i>
-                                    Format: Mã SV | Họ tên | Email | SĐT | Username | Password
-                                </small>
-                            </form>
-                        </div>
-                        <!-- Add by Student Code -->
-                        <div class="col-md-6">
-                            <h6><i class="fas fa-user-plus me-2"></i>Thêm theo mã sinh viên</h6>
-                            <form th:action="@{/teacher/classes/{id}/add-student(id=${classEntity.id})}" method="post">
-                                <div class="input-group">
-                                    <input type="text" name="studentCode" class="form-control"
-                                        placeholder="Nhập mã sinh viên" required>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-plus me-2"></i>Thêm
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+        <div id="addStudentSection" class="collapse show">
+          <div class="card-body bg-light">
+            <div class="row g-3">
+              <!-- Import from Excel -->
+              <div class="col-md-6">
+                <div class="border rounded p-3 bg-white h-100">
+                  <h5 class="text-success mb-3">
+                    <i class="fas fa-file-excel me-2"></i>📊 Import từ file
+                    Excel
+                  </h5>
+                  <form
+                    th:action="@{/teacher/classes/{id}/import-students(id=${classEntity.id})}"
+                    method="post"
+                    enctype="multipart/form-data"
+                    class="mb-3"
+                  >
+                    <div class="mb-3">
+                      <label class="form-label fw-bold">Chọn file Excel:</label>
+                      <input
+                        type="file"
+                        name="file"
+                        class="form-control form-control-lg"
+                        accept=".xlsx,.xls"
+                        required
+                      />
                     </div>
+                    <button type="submit" class="btn btn-success btn-lg w-100">
+                      <i class="fas fa-upload me-2"></i>Upload danh sách sinh
+                      viên
+                    </button>
+                  </form>
+                  <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <strong>Format Excel:</strong><br />
+                    <small
+                      >Mã SV | Họ tên | Email | SĐT | Username | Password</small
+                    >
+                  </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Students List -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Mã SV</th>
-                                <th>Họ tên</th>
-                                <th>Email</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="student, iterStat : ${students}">
-                                <td th:text="${iterStat.count}"></td>
-                                <td><strong th:text="${student.studentCode}"></strong></td>
-                                <td th:text="${student.fullName}"></td>
-                                <td th:text="${student.email}"></td>
-                                <td>
-                                    <form
-                                        th:action="@{/teacher/classes/{classId}/remove-student/{studentId}(classId=${classEntity.id},studentId=${student.id})}"
-                                        method="post" style="display:inline;"
-                                        onsubmit="return confirm('Xóa học sinh khỏi lớp?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(students)}">
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                                    Chưa có học sinh nào
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+              </div>
+              <!-- Add by Student Code -->
+              <div class="col-md-6">
+                <div class="border rounded p-3 bg-white h-100">
+                  <h5 class="text-primary mb-3">
+                    <i class="fas fa-user-plus me-2"></i>➕ Thêm từng sinh viên
+                  </h5>
+                  <form
+                    th:action="@{/teacher/classes/{id}/add-student(id=${classEntity.id})}"
+                    method="post"
+                  >
+                    <div class="mb-3">
+                      <label class="form-label fw-bold"
+                        >Nhập mã sinh viên:</label
+                      >
+                      <input
+                        type="text"
+                        name="studentCode"
+                        class="form-control form-control-lg"
+                        placeholder="VD: SV001, 20211234..."
+                        required
+                      />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                      <i class="fas fa-plus me-2"></i>Thêm sinh viên
+                    </button>
+                  </form>
+                  <div class="alert alert-warning mb-0">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    <small>Sinh viên phải được tạo trước bởi Admin</small>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Sessions Section -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4 class="section-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Danh sách Buổi Học</h4>
-            <a th:href="@{/teacher/sessions/create(classId=${classEntity.id})}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Tạo buổi học
-            </a>
+      <!-- Students List -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>STT</th>
+                  <th>Mã SV</th>
+                  <th>Họ tên</th>
+                  <th>Email</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="student, iterStat : ${students}">
+                  <td th:text="${iterStat.count}"></td>
+                  <td><strong th:text="${student.studentCode}"></strong></td>
+                  <td th:text="${student.fullName}"></td>
+                  <td th:text="${student.email}"></td>
+                  <td>
+                    <form
+                      th:action="@{/teacher/classes/{classId}/remove-student/{studentId}(classId=${classEntity.id},studentId=${student.id})}"
+                      method="post"
+                      style="display: inline"
+                      onsubmit="return confirm('Xóa học sinh khỏi lớp?');"
+                    >
+                      <button
+                        type="submit"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(students)}">
+                  <td colspan="5" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    Chưa có học sinh nào
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
 
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên buổi học</th>
-                                <th>Ngày</th>
-                                <th>Thời lượng</th>
-                                <th>Trạng thái</th>
-                                <th>Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="session, iterStat : ${sessions}">
-                                <td th:text="${iterStat.count}"></td>
-                                <td><strong th:text="${session.sessionName}"></strong></td>
-                                <td th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${session.durationMinutes} + ' phút'"></td>
-                                <td>
-                                    <span th:if="${session.status.name() == 'SCHEDULED'}" class="badge bg-secondary">
-                                        <i class="fas fa-clock"></i> Đã lên lịch
-                                    </span>
-                                    <span th:if="${session.status.name() == 'IN_PROGRESS'}" class="badge bg-warning">
-                                        <i class="fas fa-play"></i> Đang diễn ra
-                                    </span>
-                                    <span th:if="${session.status.name() == 'COMPLETED'}" class="badge bg-success">
-                                        <i class="fas fa-check"></i> Hoàn thành
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary" data-bs-toggle="modal"
-                                            th:attr="data-bs-target='#qrModal' + ${session.id}" title="Tạo QR Code">
-                                            <i class="fas fa-qrcode"></i>
-                                        </button>
-                                        <a th:href="@{/teacher/sessions/{id}/attendance(id=${session.id})}"
-                                            class="btn btn-outline-info" title="Xem điểm danh">
-                                            <i class="fas fa-list-check"></i>
-                                        </a>
-                                    </div>
+      <!-- Sessions Section -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="section-title mb-0">
+          <i class="fas fa-calendar-alt me-2"></i>Danh sách Buổi Học
+        </h4>
+        <a
+          th:href="@{/teacher/sessions/create(classId=${classEntity.id})}"
+          class="btn btn-primary"
+        >
+          <i class="fas fa-plus me-2"></i>Tạo buổi học
+        </a>
+      </div>
 
-                                    <!-- QR Modal -->
-                                    <div class="modal fade" th:id="'qrModal' + ${session.id}" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-primary text-white">
-                                                    <h5 class="modal-title">
-                                                        <i class="fas fa-qrcode me-2"></i>QR Code Điểm Danh
-                                                    </h5>
-                                                    <button type="button" class="btn-close btn-close-white"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <div class="modal-body qr-modal">
-                                                    <h6 th:text="${session.sessionName}"></h6>
-                                                    <p class="text-muted"
-                                                        th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}">
-                                                    </p>
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>STT</th>
+                  <th>Tên buổi học</th>
+                  <th>Ngày</th>
+                  <th>Thời lượng</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="session, iterStat : ${sessions}">
+                  <td th:text="${iterStat.count}"></td>
+                  <td><strong th:text="${session.sessionName}"></strong></td>
+                  <td
+                    th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}"
+                  ></td>
+                  <td th:text="${session.durationMinutes} + ' phút'"></td>
+                  <td>
+                    <span
+                      th:if="${session.status.name() == 'SCHEDULED'}"
+                      class="badge bg-secondary"
+                    >
+                      <i class="fas fa-clock"></i> Đã lên lịch
+                    </span>
+                    <span
+                      th:if="${session.status.name() == 'IN_PROGRESS'}"
+                      class="badge bg-warning"
+                    >
+                      <i class="fas fa-play"></i> Đang diễn ra
+                    </span>
+                    <span
+                      th:if="${session.status.name() == 'COMPLETED'}"
+                      class="badge bg-success"
+                    >
+                      <i class="fas fa-check"></i> Hoàn thành
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button
+                        class="btn btn-success"
+                        data-bs-toggle="modal"
+                        th:attr="data-bs-target='#qrModal' + ${session.id}"
+                        title="🔳 Tạo QR Code điểm danh"
+                      >
+                        <i class="fas fa-qrcode me-1"></i> Tạo QR
+                      </button>
+                      <a
+                        th:href="@{/teacher/sessions/{id}/attendance(id=${session.id})}"
+                        class="btn btn-info"
+                        title="📋 Xem danh sách điểm danh"
+                      >
+                        <i class="fas fa-list-check me-1"></i> Xem
+                      </a>
+                    </div>
 
-                                                    <div class="qr-image" th:attr="data-session-id=${session.id}">
-                                                        <div class="spinner-border text-primary" role="status">
-                                                            <span class="visually-hidden">Đang tạo QR...</span>
-                                                        </div>
-                                                    </div>
+                    <!-- QR Modal -->
+                    <div
+                      class="modal fade"
+                      th:id="'qrModal' + ${session.id}"
+                      tabindex="-1"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">
+                              <i class="fas fa-qrcode me-2"></i>QR Code Điểm
+                              Danh
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close btn-close-white"
+                              data-bs-dismiss="modal"
+                            ></button>
+                          </div>
+                          <div class="modal-body qr-modal">
+                            <h6 th:text="${session.sessionName}"></h6>
+                            <p
+                              class="text-muted"
+                              th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}"
+                            ></p>
 
-                                                    <div class="alert alert-info">
-                                                        <i class="fas fa-info-circle me-2"></i>
-                                                        Yêu cầu học sinh quét mã QR để điểm danh
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr th:if="${#lists.isEmpty(sessions)}">
-                                <td colspan="6" class="text-center text-muted py-4">
-                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
-                                    Chưa có buổi học nào
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                            <div
+                              class="qr-image"
+                              th:attr="data-session-id=${session.id}"
+                            >
+                              <div
+                                class="spinner-border text-primary"
+                                role="status"
+                              >
+                                <span class="visually-hidden"
+                                  >Đang tạo QR...</span
+                                >
+                              </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                              <i class="fas fa-info-circle me-2"></i>
+                              Yêu cầu học sinh quét mã QR để điểm danh
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(sessions)}">
+                  <td colspan="6" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                    Chưa có buổi học nào
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/resources/js/qr-manager.js}"></script>
     <script>
-        // Generate QR code when modal opens
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('show.bs.modal', function (event) {
-                const sessionId = this.querySelector('.qr-image').getAttribute('data-session-id');
-                const qrContainer = this.querySelector('.qr-image');
+      // Advanced QR Manager with countdown, auto-refresh, and real-time stats
+      const qrManagers = new Map();
 
-                // Get context path
-                const contextPath = window.location.pathname.split('/')[1];
+      document.querySelectorAll(".modal").forEach((modal) => {
+        modal.addEventListener("show.bs.modal", function (event) {
+          const sessionId =
+            this.querySelector(".qr-image").getAttribute("data-session-id");
+          const containerId = "qr-container-" + sessionId;
 
-                // Call API to generate QR
-                fetch(`/${contextPath}/api/qr/generate?sessionId=${sessionId}&latitude=10.762622&longitude=106.660172`, {
-                    method: 'POST'
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        qrContainer.innerHTML = `
-                        <img src="${data.qrCodeBase64}" alt="QR Code" class="img-fluid border p-3">
-                        <p class="mt-3"><small class="text-muted">Hết hạn sau: <strong>${Math.floor(data.expiresInSeconds / 60)} phút</strong></small></p>
-                    `;
-                    })
-                    .catch(error => {
-                        qrContainer.innerHTML = `<div class="alert alert-danger">Lỗi tạo QR code</div>`;
-                    });
-            });
+          // Replace spinner with container
+          const qrImage = this.querySelector(".qr-image");
+          qrImage.innerHTML = `<div id="${containerId}"></div>`;
+
+          // Initialize QR Manager
+          const manager = new QRManager(sessionId, containerId);
+          manager.init();
+
+          // Store manager for cleanup
+          qrManagers.set(sessionId, manager);
         });
-    </script>
-</body>
 
+        // Cleanup when modal closes
+        modal.addEventListener("hide.bs.modal", function (event) {
+          const sessionId =
+            this.querySelector(".qr-image").getAttribute("data-session-id");
+          const manager = qrManagers.get(sessionId);
+
+          if (manager) {
+            manager.destroy();
+            qrManagers.delete(sessionId);
+          }
+        });
+      });
+    </script>
+  </body>
 </html>

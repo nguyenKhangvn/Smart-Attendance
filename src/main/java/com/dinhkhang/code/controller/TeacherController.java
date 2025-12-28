@@ -85,13 +85,19 @@ public class TeacherController {
     }
 
     @PostMapping("/classes/create")
-    public String createClass(@ModelAttribute ClassEntity classEntity, Authentication authentication) {
-        User teacher = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    public String createClass(@ModelAttribute ClassEntity classEntity, Authentication authentication, Model model) {
+        try {
+            User teacher = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
 
-        classService.createClass(classEntity, teacher.getId());
+            classService.createClass(classEntity, teacher.getId());
 
-        return "redirect:/teacher/classes";
+            return "redirect:/teacher/classes";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("classEntity", classEntity);
+            return "teacher/class-form";
+        }
     }
 
     @GetMapping("/classes/{id}")
@@ -119,8 +125,19 @@ public class TeacherController {
     }
 
     @PostMapping("/classes/{id}/edit")
-    public String editClass(@PathVariable Long id, @ModelAttribute ClassEntity classEntity) {
-        classService.updateClass(id, classEntity);
+    public String editClass(@PathVariable Long id, @ModelAttribute ClassEntity classEntity,
+                           Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            User teacher = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+            // Use the secure method with ownership validation
+            classService.updateClass(id, classEntity, teacher.getId());
+
+            redirectAttributes.addFlashAttribute("success", "Cập nhật lớp học thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/teacher/classes/" + id;
     }
 

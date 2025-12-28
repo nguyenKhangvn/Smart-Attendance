@@ -10,6 +10,8 @@ public interface IClassService {
 
     ClassEntity updateClass(Long id, ClassEntity updatedClass);
 
+    ClassEntity updateClass(Long id, ClassEntity updatedClass, Long teacherId);
+
     void addStudentToClass(Long classId, Long studentId);
 
     void removeStudentFromClass(Long classId, Long studentId);
@@ -21,6 +23,8 @@ public interface IClassService {
     List<ClassEntity> getClassesByStudent(Long studentId);
 
     void deleteClass(Long id);
+
+    void deleteClass(Long id, Long teacherId);
 
     List<ClassEntity> getAllClasses();
 }
