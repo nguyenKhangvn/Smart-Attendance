@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
@@ -18,6 +19,7 @@ public class User {
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -51,12 +53,15 @@ public class User {
 
     // Relationships
     @ManyToMany(mappedBy = "students")
+    @JsonIgnore
     private Set<ClassEntity> enrolledClasses = new HashSet<>();
 
     @OneToMany(mappedBy = "teacher")
+    @JsonIgnore
     private Set<ClassEntity> teachingClasses = new HashSet<>();
 
     @OneToMany(mappedBy = "student")
+    @JsonIgnore
     private Set<AttendanceRecord> attendanceRecords = new HashSet<>();
 
     @PrePersist

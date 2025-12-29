@@ -130,21 +130,13 @@ public class AttendanceService implements IAttendanceService {
         return EARTH_RADIUS * c; // Đã thêm return
     } // Đã thêm đóng ngoặc
 
-    // --- FIX 2: SỬA LỖI CÚ PHÁP HÀM LẤY DANH SÁCH ---
+    // --- FIX 2: RETURN ENTITY THAY VÌ DTO ĐỂ VIEW TRUY CẬP ĐẦY ĐỦ FIELDS ---
     @Override
     @Transactional(readOnly = true)
-    public List<AttendanceRecordDTO> getAttendanceBySession(Long sessionId) {
-        // Cách 1: Dùng Custom Query (nếu repository của bạn có hàm này)
-        List<AttendanceRecord> records = attendanceRecordRepository.findByClassSessionIdWithDetails(sessionId);
-        return attendanceMapper.toDTOList(records);
-
-        // Cách 2: Nếu chưa có hàm trên, dùng cách mặc định này (Bỏ comment nếu cần dùng):
-        /*
-        ClassSession classSession = new ClassSession();
-        classSession.setId(sessionId);
-        List<AttendanceRecord> records = attendanceRecordRepository.findByClassSession(classSession);
-        return attendanceMapper.toDTOList(records);
-        */
+    public List<AttendanceRecord> getAttendanceBySession(Long sessionId) {
+        // Dùng Custom Query với JOIN FETCH để load tất cả relationships
+        // Trả về Entity để View có thể truy cập modificationNote, failReason, etc.
+        return attendanceRecordRepository.findByClassSessionIdWithDetails(sessionId);
     }
 
     @Override // Thêm Override nếu có trong interface

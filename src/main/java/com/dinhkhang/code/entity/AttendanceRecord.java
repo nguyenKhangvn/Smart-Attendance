@@ -2,6 +2,7 @@ package com.dinhkhang.code.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "attendance_records")
@@ -52,6 +53,7 @@ public class AttendanceRecord {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id", nullable = false)
+    @JsonIgnore
     private ClassSession classSession;
 
     @PrePersist

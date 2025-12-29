@@ -1,6 +1,5 @@
 package com.dinhkhang.code.controller;
 
-import com.dinhkhang.code.dto.AttendanceRecordDTO;
 import com.dinhkhang.code.dto.StudentImportDTO;
 import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassEntity;
@@ -67,17 +66,18 @@ public class TeacherController {
         return "teacher/dashboard";
     }
 
-    @GetMapping("/classes")
-    public String listClasses(Model model, Authentication authentication) {
-        User teacher = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-
-        List<ClassEntity> classes = classService.getClassesByTeacher(teacher.getId());
-
-        model.addAttribute("classes", classes);
-
-        return "teacher/classes";
-    }
+    // Route này đã được thay thế bằng dashboard với card layout
+    // @GetMapping("/classes")
+    // public String listClasses(Model model, Authentication authentication) {
+    //     User teacher = userService.findByUsername(authentication.getName())
+    //             .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    //
+    //     List<ClassEntity> classes = classService.getClassesByTeacher(teacher.getId());
+    //
+    //     model.addAttribute("classes", classes);
+    //
+    //     return "teacher/classes";
+    // }
 
     @GetMapping("/classes/create")
     public String showCreateClassForm(Model model) {
@@ -211,11 +211,11 @@ public class TeacherController {
             throw new RuntimeException("Unauthorized access to this session");
         }
 
-        // Get all attendance records for this session
-        List<AttendanceRecordDTO> attendanceRecords = attendanceService.getAttendanceBySession(id);
+        // Get all attendance records for this session (Entity thay vì DTO)
+        List<AttendanceRecord> attendanceRecords = attendanceService.getAttendanceBySession(id);
         
         // Create a map for quick lookup
-        java.util.Map<Long, AttendanceRecordDTO> attendanceMap = attendanceRecords.stream()
+        java.util.Map<Long, AttendanceRecord> attendanceMap = attendanceRecords.stream()
                 .collect(java.util.stream.Collectors.toMap(
                     record -> record.getStudent().getId(),
                     record -> record,

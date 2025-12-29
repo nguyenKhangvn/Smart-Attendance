@@ -3,6 +3,8 @@ package com.dinhkhang.code.controller.api;
 import com.dinhkhang.code.dto.AttendanceRecordDTO;
 import com.dinhkhang.code.dto.AttendanceResponse;
 import com.dinhkhang.code.dto.CheckInRequest;
+import com.dinhkhang.code.entity.AttendanceRecord;
+import com.dinhkhang.code.mapper.AttendanceMapper;
 import com.dinhkhang.code.service.IAttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,9 @@ public class AttendanceApiController {
 
     @Autowired
     private IAttendanceService attendanceService;
+    
+    @Autowired
+    private AttendanceMapper attendanceMapper;
 
     @PostMapping("/checkin")
     public ResponseEntity<AttendanceResponse> checkIn(
@@ -35,11 +40,12 @@ public class AttendanceApiController {
 
     /**
      * Get attendance records for a specific session
-     * Returns DTOs to avoid LazyInitializationException
+     * API vẫn trả về DTO để tránh expose toàn bộ Entity ra ngoài
      */
     @GetMapping("/session/{sessionId}")
     public ResponseEntity<List<AttendanceRecordDTO>> getSessionAttendance(@PathVariable Long sessionId) {
-        List<AttendanceRecordDTO> records = attendanceService.getAttendanceBySession(sessionId);
-        return ResponseEntity.ok(records);
+        List<AttendanceRecord> records = attendanceService.getAttendanceBySession(sessionId);
+        List<AttendanceRecordDTO> dtos = attendanceMapper.toDTOList(records);
+        return ResponseEntity.ok(dtos);
     }
 }

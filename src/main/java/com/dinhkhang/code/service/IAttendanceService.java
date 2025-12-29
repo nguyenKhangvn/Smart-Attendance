@@ -10,7 +10,7 @@ import java.util.List;
 public interface IAttendanceService {
     AttendanceResponse checkIn(CheckInRequest request, String username);
 
-    List<AttendanceRecordDTO> getAttendanceBySession(Long sessionId);
+    List<AttendanceRecord> getAttendanceBySession(Long sessionId);
 
     List<AttendanceRecord> getStudentAttendance(Long studentId, Long classId);
 }
