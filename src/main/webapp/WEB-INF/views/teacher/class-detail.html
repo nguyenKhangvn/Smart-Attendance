@@ -259,28 +259,32 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="session, iterStat : ${sessions}">
+                <tr th:each="attendanceSession, iterStat : ${sessions}">
                   <td th:text="${iterStat.count}"></td>
-                  <td><strong th:text="${session.sessionName}"></strong></td>
+                  <td>
+                    <strong th:text="${attendanceSession.sessionName}"></strong>
+                  </td>
                   <td
-                    th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}"
+                    th:text="${#temporals.format(attendanceSession.sessionDate, 'dd/MM/yyyy HH:mm')}"
                   ></td>
-                  <td th:text="${session.durationMinutes} + ' phút'"></td>
+                  <td
+                    th:text="${attendanceSession.durationMinutes} + ' phút'"
+                  ></td>
                   <td>
                     <span
-                      th:if="${session.status.name() == 'SCHEDULED'}"
+                      th:if="${attendanceSession.status.name() == 'SCHEDULED'}"
                       class="badge bg-secondary"
                     >
                       <i class="fas fa-clock"></i> Đã lên lịch
                     </span>
                     <span
-                      th:if="${session.status.name() == 'IN_PROGRESS'}"
+                      th:if="${attendanceSession.status.name() == 'IN_PROGRESS'}"
                       class="badge bg-warning"
                     >
                       <i class="fas fa-play"></i> Đang diễn ra
                     </span>
                     <span
-                      th:if="${session.status.name() == 'COMPLETED'}"
+                      th:if="${attendanceSession.status.name() == 'COMPLETED'}"
                       class="badge bg-success"
                     >
                       <i class="fas fa-check"></i> Hoàn thành
@@ -291,13 +295,13 @@
                       <button
                         class="btn btn-success"
                         data-bs-toggle="modal"
-                        th:attr="data-bs-target='#qrModal' + ${session.id}"
+                        th:attr="data-bs-target='#qrModal' + ${attendanceSession.id}"
                         title="🔳 Tạo QR Code điểm danh"
                       >
                         <i class="fas fa-qrcode me-1"></i> Tạo QR
                       </button>
                       <a
-                        th:href="@{/teacher/sessions/{id}/attendance(id=${session.id})}"
+                        th:href="@{/teacher/sessions/{id}/attendance(id=${attendanceSession.id})}"
                         class="btn btn-info"
                         title="📋 Xem danh sách điểm danh"
                       >
@@ -308,7 +312,7 @@
                     <!-- QR Modal -->
                     <div
                       class="modal fade"
-                      th:id="'qrModal' + ${session.id}"
+                      th:id="'qrModal' + ${attendanceSession.id}"
                       tabindex="-1"
                     >
                       <div class="modal-dialog modal-dialog-centered">
@@ -325,15 +329,15 @@
                             ></button>
                           </div>
                           <div class="modal-body qr-modal">
-                            <h6 th:text="${session.sessionName}"></h6>
+                            <h6 th:text="${attendanceSession.sessionName}"></h6>
                             <p
                               class="text-muted"
-                              th:text="${#temporals.format(session.sessionDate, 'dd/MM/yyyy HH:mm')}"
+                              th:text="${#temporals.format(attendanceSession.sessionDate, 'dd/MM/yyyy HH:mm')}"
                             ></p>
 
                             <div
                               class="qr-image"
-                              th:attr="data-session-id=${session.id}"
+                              th:attr="data-session-id=${attendanceSession.id}"
                             >
                               <div
                                 class="spinner-border text-primary"

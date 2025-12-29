@@ -1,8 +1,8 @@
 package com.dinhkhang.code.controller.api;
 
+import com.dinhkhang.code.dto.AttendanceRecordDTO;
 import com.dinhkhang.code.dto.AttendanceResponse;
 import com.dinhkhang.code.dto.CheckInRequest;
-import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.service.IAttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,9 +33,13 @@ public class AttendanceApiController {
         }
     }
 
+    /**
+     * Get attendance records for a specific session
+     * Returns DTOs to avoid LazyInitializationException
+     */
     @GetMapping("/session/{sessionId}")
-    public ResponseEntity<List<AttendanceRecord>> getSessionAttendance(@PathVariable Long sessionId) {
-        List<AttendanceRecord> records = attendanceService.getAttendanceBySession(sessionId);
+    public ResponseEntity<List<AttendanceRecordDTO>> getSessionAttendance(@PathVariable Long sessionId) {
+        List<AttendanceRecordDTO> records = attendanceService.getAttendanceBySession(sessionId);
         return ResponseEntity.ok(records);
     }
 }

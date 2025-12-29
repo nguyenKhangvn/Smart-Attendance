@@ -8,4 +8,6 @@ public interface IQRService {
             Integer expirationMinutes, Integer maxDistanceMeters);
 
     QRSession validateQRSession(Long qrId, String tokenSecret);
+    
+    QRSession validateQRSessionBySessionIdAndToken(Long sessionId, String tokenSecret);
 }

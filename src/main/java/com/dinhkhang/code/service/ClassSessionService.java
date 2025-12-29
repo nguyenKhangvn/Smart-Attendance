@@ -69,6 +69,11 @@ public class ClassSessionService implements IClassSessionService {
                 .orElseThrow(() -> new RuntimeException("Session not found"));
     }
 
+    public ClassSession findByIdWithClassEntity(Long id) {
+        return classSessionRepository.findByIdWithClassEntity(id)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+    }
+
     public void deleteSession(Long id) {
         classSessionRepository.deleteById(id);
     }

@@ -97,4 +97,16 @@ public class QRService implements IQRService {
 
         return qrSession;
     }
+
+    /**
+     * Validate QR Session by ClassSession ID and Token (NEW METHOD)
+     * This is used when QR code contains sessionId instead of qrSessionId
+     */
+    public QRSession validateQRSessionBySessionIdAndToken(Long sessionId, String tokenSecret) {
+        QRSession qrSession = qrSessionRepository
+                .findValidQRSessionBySessionIdAndToken(sessionId, tokenSecret, LocalDateTime.now())
+                .orElseThrow(() -> new RuntimeException("QR code không hợp lệ hoặc đã hết hạn"));
+
+        return qrSession;
+    }
 }

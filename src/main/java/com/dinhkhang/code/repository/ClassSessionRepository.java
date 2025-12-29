@@ -32,4 +32,11 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
     List<ClassSession> findByTeacherIdAndStatus(
             @Param("teacherId") Long teacherId,
             @Param("status") ClassSession.SessionStatus status);
+
+    @Query("SELECT s FROM ClassSession s " +
+            "LEFT JOIN FETCH s.classEntity ce " +
+            "LEFT JOIN FETCH ce.teacher " +
+            "LEFT JOIN FETCH ce.students " +
+            "WHERE s.id = :id")
+    java.util.Optional<ClassSession> findByIdWithClassEntity(@Param("id") Long id);
 }

@@ -1,11 +1,13 @@
 package com.dinhkhang.code.service;
 
+import com.dinhkhang.code.dto.AttendanceRecordDTO;
 import com.dinhkhang.code.dto.AttendanceResponse;
 import com.dinhkhang.code.dto.CheckInRequest;
 import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassSession;
 import com.dinhkhang.code.entity.QRSession;
 import com.dinhkhang.code.entity.User;
+import com.dinhkhang.code.mapper.AttendanceMapper;
 import com.dinhkhang.code.repository.AttendanceRecordRepository;
 import com.dinhkhang.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +29,16 @@ public class AttendanceService implements IAttendanceService {
     @Autowired
     private IQRService qrService;
 
+    @Autowired
+    private AttendanceMapper attendanceMapper;
+
     public AttendanceResponse checkIn(CheckInRequest request, String username) {
         try {
             // 1. Validate QR session
-            QRSession qrSession = qrService.validateQRSession(request.getQrId(), request.getTokenSecret());
+            QRSession qrSession = qrService.validateQRSessionBySessionIdAndToken(
+                    request.getSessionId(),
+                    request.getTokenSecret()
+            );
             ClassSession classSession = qrSession.getClassSession();
 
             // 2. Get student
@@ -57,7 +65,7 @@ public class AttendanceService implements IAttendanceService {
 
             // 6. Check distance constraint
             if (distance > qrSession.getMaxDistanceMeters()) {
-                AttendanceRecord failedRecord = saveFailedRecord(student, classSession, request, distance,
+                saveFailedRecord(student, classSession, request, distance,
                         AttendanceRecord.AttendanceStatus.FAILED_DISTANCE,
                         String.format("Khoảng cách %.2fm vượt quá giới hạn %dm",
                                 distance, qrSession.getMaxDistanceMeters()));
@@ -90,8 +98,8 @@ public class AttendanceService implements IAttendanceService {
     }
 
     private AttendanceRecord saveFailedRecord(User student, ClassSession classSession,
-            CheckInRequest request, double distance,
-            AttendanceRecord.AttendanceStatus status, String reason) {
+                                              CheckInRequest request, double distance,
+                                              AttendanceRecord.AttendanceStatus status, String reason) {
         AttendanceRecord record = new AttendanceRecord();
         record.setStudent(student);
         record.setClassSession(classSession);
@@ -106,7 +114,7 @@ public class AttendanceService implements IAttendanceService {
         return attendanceRecordRepository.save(record);
     }
 
-    // Haversine formula to calculate distance between two GPS coordinates
+    // --- FIX 1: HOÀN THIỆN HÀM TÍNH KHOẢNG CÁCH ---
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int EARTH_RADIUS = 6371000; // meters
 
@@ -119,15 +127,27 @@ public class AttendanceService implements IAttendanceService {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return EARTH_RADIUS * c; // Distance in meters
-    }
+        return EARTH_RADIUS * c; // Đã thêm return
+    } // Đã thêm đóng ngoặc
 
-    public List<AttendanceRecord> getAttendanceBySession(Long sessionId) {
+    // --- FIX 2: SỬA LỖI CÚ PHÁP HÀM LẤY DANH SÁCH ---
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttendanceRecordDTO> getAttendanceBySession(Long sessionId) {
+        // Cách 1: Dùng Custom Query (nếu repository của bạn có hàm này)
+        List<AttendanceRecord> records = attendanceRecordRepository.findByClassSessionIdWithDetails(sessionId);
+        return attendanceMapper.toDTOList(records);
+
+        // Cách 2: Nếu chưa có hàm trên, dùng cách mặc định này (Bỏ comment nếu cần dùng):
+        /*
         ClassSession classSession = new ClassSession();
         classSession.setId(sessionId);
-        return attendanceRecordRepository.findByClassSession(classSession);
+        List<AttendanceRecord> records = attendanceRecordRepository.findByClassSession(classSession);
+        return attendanceMapper.toDTOList(records);
+        */
     }
 
+    @Override // Thêm Override nếu có trong interface
     public List<AttendanceRecord> getStudentAttendance(Long studentId, Long classId) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));

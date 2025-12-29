@@ -44,4 +44,16 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
                         @Param("status") AttendanceRecord.AttendanceStatus status);
 
         boolean existsByStudentAndClassSession(User student, ClassSession classSession);
+
+        /**
+         * Query with JOIN FETCH to avoid LazyInitializationException
+         * Load all necessary relationships in one query
+         */
+        @Query("SELECT a FROM AttendanceRecord a " +
+               "LEFT JOIN FETCH a.student s " +
+               "LEFT JOIN FETCH a.classSession cs " +
+               "LEFT JOIN FETCH cs.classEntity ce " +
+               "WHERE cs.id = :sessionId " +
+               "ORDER BY s.studentCode ASC")
+        List<AttendanceRecord> findByClassSessionIdWithDetails(@Param("sessionId") Long sessionId);
 }

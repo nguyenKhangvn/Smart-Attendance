@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 public class CheckInRequest {
 
-    @NotNull(message = "QR ID is required")
-    private Long qrId;
+    @NotNull(message = "Session ID is required")
+    private Long sessionId;  // Changed from qrId to sessionId
 
     @NotBlank(message = "Token secret is required")
     private String tokenSecret;
@@ -26,9 +26,9 @@ public class CheckInRequest {
     public CheckInRequest() {
     }
 
-    public CheckInRequest(Long qrId, String tokenSecret, Double studentLat, Double studentLong,
+    public CheckInRequest(Long sessionId, String tokenSecret, Double studentLat, Double studentLong,
             String deviceUid, String imageData) {
-        this.qrId = qrId;
+        this.sessionId = sessionId;
         this.tokenSecret = tokenSecret;
         this.studentLat = studentLat;
         this.studentLong = studentLong;
@@ -37,12 +37,12 @@ public class CheckInRequest {
     }
 
     // Getters and Setters
-    public Long getQrId() {
-        return qrId;
+    public Long getSessionId() {
+        return sessionId;
     }
 
-    public void setQrId(Long qrId) {
-        this.qrId = qrId;
+    public void setSessionId(Long sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getTokenSecret() {

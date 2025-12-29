@@ -30,4 +30,12 @@ public interface QRSessionRepository extends JpaRepository<QRSession, Long> {
     Optional<QRSession> findValidQRSession(
             @Param("tokenSecret") String tokenSecret,
             @Param("now") LocalDateTime now);
+
+    @Query("SELECT q FROM QRSession q WHERE q.classSession.id = :sessionId " +
+            "AND q.tokenSecret = :tokenSecret " +
+            "AND q.isActive = true AND q.expiredAt > :now")
+    Optional<QRSession> findValidQRSessionBySessionIdAndToken(
+            @Param("sessionId") Long sessionId,
+            @Param("tokenSecret") String tokenSecret,
+            @Param("now") LocalDateTime now);
 }

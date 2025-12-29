@@ -17,5 +17,7 @@ public interface IClassSessionService {
 
     ClassSession findById(Long id);
 
+    ClassSession findByIdWithClassEntity(Long id);
+
     void deleteSession(Long id);
 }

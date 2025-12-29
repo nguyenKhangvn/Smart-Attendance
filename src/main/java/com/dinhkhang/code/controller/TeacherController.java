@@ -1,14 +1,12 @@
 package com.dinhkhang.code.controller;
 
+import com.dinhkhang.code.dto.AttendanceRecordDTO;
 import com.dinhkhang.code.dto.StudentImportDTO;
+import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassEntity;
 import com.dinhkhang.code.entity.ClassSession;
 import com.dinhkhang.code.entity.User;
-import com.dinhkhang.code.service.ExcelImportService;
-import com.dinhkhang.code.service.IClassService;
-import com.dinhkhang.code.service.IClassSessionService;
-import com.dinhkhang.code.service.IQRService;
-import com.dinhkhang.code.service.IUserService;
+import com.dinhkhang.code.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -38,6 +36,9 @@ public class TeacherController {
 
     @Autowired
     private ExcelImportService excelImportService;
+    
+    @Autowired
+    private IAttendanceService attendanceService;
 
     @GetMapping("/dashboard")
     @Transactional(readOnly = true)
@@ -78,6 +79,14 @@ public class TeacherController {
         return "teacher/classes";
     }
 
+    @GetMapping("/classes/create")
+    public String showCreateClassForm(Model model) {
+        // Tạo một object rỗng để bind vào form
+        model.addAttribute("classEntity", new ClassEntity());
+        
+        return "teacher/class-form";
+    }
+
     @PostMapping("/classes/create")
     public String createClass(
             @ModelAttribute("classEntity") ClassEntity classEntity,
@@ -99,8 +108,6 @@ public class TeacherController {
             return "redirect:/teacher/classes/create";
         }
     }
-
-
 
     @GetMapping("/classes/{id}")
     public String viewClass(@PathVariable Long id, Model model) {
@@ -143,19 +150,102 @@ public class TeacherController {
         return "redirect:/teacher/classes/" + id;
     }
 
-    @GetMapping("/sessions/{id}/attendance")
-    public String viewAttendance(@PathVariable Long id, Model model) {
-        ClassSession session = classSessionService.findById(id);
+    // ==================== SESSIONS MANAGEMENT ====================
 
-        model.addAttribute("session", session);
+    @GetMapping("/sessions/create")
+    public String showCreateSessionForm(@RequestParam Long classId, Model model) {
+        ClassEntity classEntity = classService.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+
+        model.addAttribute("classEntity", classEntity);
+        return "teacher/session-form";
+    }
+
+    @PostMapping("/sessions/create")
+    public String createSession(@RequestParam Long classId,
+            @RequestParam String sessionName,
+            @RequestParam String sessionDate,
+            @RequestParam String sessionTime,
+            @RequestParam Integer durationMinutes,
+            @RequestParam(required = false) String notes,
+            @RequestParam(defaultValue = "10") Integer allowedMinutesBefore,
+            @RequestParam(defaultValue = "15") Integer allowedMinutesAfter,
+            RedirectAttributes redirectAttributes) {
+        try {
+            ClassEntity classEntity = classService.findById(classId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+
+            // Parse date and time
+            java.time.LocalDateTime sessionDateTime = java.time.LocalDateTime.parse(
+                    sessionDate + "T" + sessionTime);
+
+            ClassSession session = new ClassSession();
+            session.setSessionName(sessionName);
+            session.setSessionDate(sessionDateTime);
+            session.setDurationMinutes(durationMinutes);
+            session.setNotes(notes);
+            session.setClassEntity(classEntity);
+
+            classSessionService.createSession(session, classId);
+
+            redirectAttributes.addFlashAttribute("success",
+                    "Đã tạo buổi học thành công! Hãy tạo QR code để sinh viên điểm danh.");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi tạo buổi học: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return "redirect:/teacher/classes/" + classId;
+    }
+
+    @GetMapping("/sessions/{id}/attendance")
+    public String viewAttendance(@PathVariable Long id, Model model, Authentication authentication) {
+        User teacher = userService.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        
+        ClassSession session = classSessionService.findByIdWithClassEntity(id);
+        
+        // Verify teacher owns this class
+        if (!session.getClassEntity().getTeacher().getId().equals(teacher.getId())) {
+            throw new RuntimeException("Unauthorized access to this session");
+        }
+
+        // Get all attendance records for this session
+        List<AttendanceRecordDTO> attendanceRecords = attendanceService.getAttendanceBySession(id);
+        
+        // Create a map for quick lookup
+        java.util.Map<Long, AttendanceRecordDTO> attendanceMap = attendanceRecords.stream()
+                .collect(java.util.stream.Collectors.toMap(
+                    record -> record.getStudent().getId(),
+                    record -> record,
+                    (existing, replacement) -> existing
+                ));
+
+        model.addAttribute("attendanceSession", session);
         model.addAttribute("classEntity", session.getClassEntity());
+        model.addAttribute("attendanceRecords", attendanceRecords);
+        model.addAttribute("attendanceMap", attendanceMap);
+        
+        // Calculate statistics
+        long totalStudents = session.getClassEntity().getStudents().size();
+        long presentCount = attendanceRecords.stream()
+                .filter(r -> "SUCCESS".equals(r.getStatus()))
+                .count();
+        long absentCount = totalStudents - attendanceRecords.size();
+        double attendanceRate = totalStudents > 0 ? (presentCount * 100.0 / totalStudents) : 0;
+        
+        model.addAttribute("totalStudents", totalStudents);
+        model.addAttribute("presentCount", presentCount);
+        model.addAttribute("absentCount", absentCount);
+        model.addAttribute("attendanceRate", attendanceRate);
 
         return "teacher/attendance";
     }
 
     @GetMapping("/sessions/{id}/qr")
     public String generateQR(@PathVariable Long id, Model model) {
-        ClassSession session = classSessionService.findById(id);
+        ClassSession session = classSessionService.findByIdWithClassEntity(id);
 
         model.addAttribute("session", session);
 
@@ -239,55 +329,6 @@ public class TeacherController {
             redirectAttributes.addFlashAttribute("success", "Đã xóa học sinh khỏi lớp!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
-        }
-
-        return "redirect:/teacher/classes/" + classId;
-    }
-
-    // ==================== SESSIONS MANAGEMENT ====================
-
-    @GetMapping("/sessions/create")
-    public String showCreateSessionForm(@RequestParam Long classId, Model model) {
-        ClassEntity classEntity = classService.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
-
-        model.addAttribute("classEntity", classEntity);
-        return "teacher/session-form";
-    }
-
-    @PostMapping("/sessions/create")
-    public String createSession(@RequestParam Long classId,
-            @RequestParam String sessionName,
-            @RequestParam String sessionDate,
-            @RequestParam String sessionTime,
-            @RequestParam Integer durationMinutes,
-            @RequestParam(required = false) String notes,
-            @RequestParam(defaultValue = "10") Integer allowedMinutesBefore,
-            @RequestParam(defaultValue = "15") Integer allowedMinutesAfter,
-            RedirectAttributes redirectAttributes) {
-        try {
-            ClassEntity classEntity = classService.findById(classId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
-
-            // Parse date and time
-            java.time.LocalDateTime sessionDateTime = java.time.LocalDateTime.parse(
-                    sessionDate + "T" + sessionTime);
-
-            ClassSession session = new ClassSession();
-            session.setSessionName(sessionName);
-            session.setSessionDate(sessionDateTime);
-            session.setDurationMinutes(durationMinutes);
-            session.setNotes(notes);
-            session.setClassEntity(classEntity);
-
-            classSessionService.createSession(session, classId);
-
-            redirectAttributes.addFlashAttribute("success",
-                    "Đã tạo buổi học thành công! Hãy tạo QR code để sinh viên điểm danh.");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Lỗi tạo buổi học: " + e.getMessage());
-            e.printStackTrace();
         }
 
         return "redirect:/teacher/classes/" + classId;
