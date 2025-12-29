@@ -1,10 +1,14 @@
 package com.dinhkhang.code.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class AttendanceRecordDTO {
     private Long id;
+    
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime checkedInAt;
+    
     private String status;
     private Double distanceMeters;
     private String failReason;
