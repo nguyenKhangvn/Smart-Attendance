@@ -245,9 +245,9 @@ public class TeacherController {
 
     @GetMapping("/sessions/{id}/qr")
     public String generateQR(@PathVariable Long id, Model model) {
-        ClassSession session = classSessionService.findByIdWithClassEntity(id);
+        ClassSession classSession = classSessionService.findByIdWithClassEntity(id);
 
-        model.addAttribute("session", session);
+        model.addAttribute("classSession", classSession);
 
         return "teacher/qr-scanner";
     }
