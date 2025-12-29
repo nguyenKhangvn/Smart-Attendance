@@ -20,10 +20,10 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Long> {
     @Query("SELECT DISTINCT c FROM ClassEntity c LEFT JOIN FETCH c.students WHERE c.teacher = :teacher AND c.isActive = :isActive")
     List<ClassEntity> findByTeacherAndIsActive(@Param("teacher") User teacher, @Param("isActive") Boolean isActive);
 
-    @Query("SELECT c FROM ClassEntity c WHERE :student MEMBER OF c.students")
+    @Query("SELECT DISTINCT c FROM ClassEntity c LEFT JOIN FETCH c.teacher WHERE :student MEMBER OF c.students")
     List<ClassEntity> findClassesByStudent(@Param("student") User student);
 
-    @Query("SELECT c FROM ClassEntity c WHERE :student MEMBER OF c.students AND c.isActive = true")
+    @Query("SELECT DISTINCT c FROM ClassEntity c LEFT JOIN FETCH c.teacher WHERE :student MEMBER OF c.students AND c.isActive = true")
     List<ClassEntity> findActiveClassesByStudent(@Param("student") User student);
 
     @Query("SELECT c FROM ClassEntity c WHERE c.teacher = :teacher AND c.semester = :semester AND c.isActive = true")
