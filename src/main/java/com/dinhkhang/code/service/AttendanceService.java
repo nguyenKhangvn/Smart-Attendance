@@ -108,7 +108,8 @@ public class AttendanceService implements IAttendanceService {
                         record.setDeviceUid(request.getDeviceUid());
                         record.setFaceDataUrl(imageUrl); // Lưu URL Cloudinary thay vì Base64
                         record.setStatus(AttendanceRecord.AttendanceStatus.SUCCESS);
-                        record.setCheckedInAt(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime());
+                        record.setCheckedInAt(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"))
+                                        .toLocalDateTime());
 
                         record = attendanceRecordRepository.save(record);
 

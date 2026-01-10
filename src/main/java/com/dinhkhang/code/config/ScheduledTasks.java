@@ -54,4 +54,3 @@ public class ScheduledTasks {
         System.out.println("[HEALTH CHECK] Active QR Sessions: " + activeQRCount);
     }
 }
-

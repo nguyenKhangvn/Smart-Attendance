@@ -279,13 +279,11 @@
                 <td>
                   <th:block th:with="record=${attendanceMap.get(student.id)}">
                     <img th:if="${record != null && record.faceDataUrl != null && !record.faceDataUrl.isEmpty()}"
-                         th:src="${record.faceDataUrl}"
-                         alt="Ảnh điểm danh"
-                         class="attendance-image"
-                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; cursor: pointer;"
-                         onclick="openImageModal(this.src)">
+                      th:src="${record.faceDataUrl}" alt="Ảnh điểm danh" class="attendance-image"
+                      style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; cursor: pointer;"
+                      onclick="openImageModal(this.src)">
                     <span th:if="${record == null || record.faceDataUrl == null || record.faceDataUrl.isEmpty()}"
-                          class="text-muted">Không có</span>
+                      class="text-muted">Không có</span>
                   </th:block>
                 </td>
               </tr>

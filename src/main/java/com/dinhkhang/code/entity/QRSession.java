@@ -136,7 +136,8 @@ public class QRSession {
 
     // Helper methods
     public boolean isExpired() {
-        return java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime().isAfter(expiredAt);
+        return java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime()
+                .isAfter(expiredAt);
     }
 
     public boolean isValid() {

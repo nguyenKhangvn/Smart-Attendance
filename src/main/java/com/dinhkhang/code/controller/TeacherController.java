@@ -249,10 +249,10 @@ public class TeacherController {
         try {
             ClassSession session = classSessionService.startSession(id);
             redirectAttributes.addFlashAttribute("success",
-                "Đã bắt đầu buổi học: " + session.getSessionName());
+                    "Đã bắt đầu buổi học: " + session.getSessionName());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
-                "Không thể bắt đầu buổi học: " + e.getMessage());
+                    "Không thể bắt đầu buổi học: " + e.getMessage());
         }
         return "redirect:/teacher/sessions/" + id + "/qr";
     }

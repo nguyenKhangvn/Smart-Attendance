@@ -84,24 +84,37 @@ async function initCamera() {
 function captureSelfie() {
   const video = document.getElementById("preview");
   const canvas = document.getElementById("canvas");
-  
+
   // ✅ KIỂM TRA VIDEO ĐÃ SẴN SÀNG
   if (!video.videoWidth || !video.videoHeight) {
-    console.error("❌ Video not ready:", video.videoWidth, "x", video.videoHeight);
+    console.error(
+      "❌ Video not ready:",
+      video.videoWidth,
+      "x",
+      video.videoHeight
+    );
     throw new Error("Camera chưa sẵn sàng. Vui lòng chờ và thử lại!");
   }
-  
-  console.log("📸 Capturing selfie from video:", video.videoWidth, "x", video.videoHeight);
-  
+
+  console.log(
+    "📸 Capturing selfie from video:",
+    video.videoWidth,
+    "x",
+    video.videoHeight
+  );
+
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-  
+
   const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  
+
   const imageData = canvas.toDataURL("image/jpeg", 0.9);
-  console.log("✅ Selfie captured:", (imageData.length / 1024).toFixed(1) + "KB");
-  
+  console.log(
+    "✅ Selfie captured:",
+    (imageData.length / 1024).toFixed(1) + "KB"
+  );
+
   return imageData;
 }
 
@@ -249,7 +262,7 @@ function sendCheckInRequest(payload) {
     success: function (response) {
       // Xóa offline data nếu gửi thành công
       localStorage.removeItem("offline_attendance");
-      
+
       if (response.success) {
         showResult(
           "✅ Điểm danh thành công! Khoảng cách: " +
@@ -282,8 +295,10 @@ function sendCheckInRequest(payload) {
       // Status 0 = Network error (không có response từ server)
       // Status >= 500 = Server error (server có vấn đề)
       if (xhr.status === 0) {
-        console.warn("⚠️ Network error detected (status 0) - Checking connection...");
-        
+        console.warn(
+          "⚠️ Network error detected (status 0) - Checking connection..."
+        );
+
         // Kiểm tra kỹ: Có thể do CORS, timeout, hoặc thực sự mất mạng
         if (!navigator.onLine) {
           console.log("📴 Offline confirmed - Saving data");
@@ -293,16 +308,17 @@ function sendCheckInRequest(payload) {
           // Có mạng nhưng status 0 -> Có thể do CORS, URL sai, hoặc server chưa chạy
           showResult(
             "❌ Không thể kết nối server. Vui lòng kiểm tra:<br>" +
-            "- Server có đang chạy không?<br>" +
-            "- URL API có đúng không?<br>" +
-            "- CORS có được cấu hình không?",
+              "- Server có đang chạy không?<br>" +
+              "- URL API có đúng không?<br>" +
+              "- CORS có được cấu hình không?",
             "danger"
           );
         }
       } else if (xhr.status >= 500) {
         // Server error - Không lưu offline vì đây là lỗi backend logic
         showResult(
-          "❌ Lỗi server (500): " + (response ? response.message : "Server đang gặp sự cố"),
+          "❌ Lỗi server (500): " +
+            (response ? response.message : "Server đang gặp sự cố"),
           "danger"
         );
       } else if (xhr.status === 429) {
@@ -349,7 +365,7 @@ function saveOffline(payload) {
 
   // Đăng ký sự kiện: Khi có mạng lại thì tự gửi
   window.addEventListener("online", syncOfflineData);
-  
+
   // Thử đồng bộ lại sau 5 giây (trường hợp mạng chập chờn)
   setTimeout(syncOfflineData, 5000);
 }

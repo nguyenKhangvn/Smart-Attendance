@@ -89,7 +89,9 @@ public class SecureAttendanceService {
             ZonedDateTime now = ZonedDateTime.now(VIETNAM_ZONE);
             LocalDateTime nowLocal = now.toLocalDateTime();
             boolean isTooEarly = session.getSessionDate().isAfter(nowLocal.plusMinutes(15));
-            boolean isTooLate = session.getSessionDate().plusMinutes(session.getDurationMinutes() != null ? session.getDurationMinutes() : 90).isBefore(nowLocal);
+            boolean isTooLate = session.getSessionDate()
+                    .plusMinutes(session.getDurationMinutes() != null ? session.getDurationMinutes() : 90)
+                    .isBefore(nowLocal);
 
             if (isTooEarly) {
                 return AttendanceCheckInResponse.failed(
@@ -103,9 +105,10 @@ public class SecureAttendanceService {
                         "FAILED_SESSION_TOO_LATE");
             }
 
-            // Nếu session chưa bắt đầu nhưng đã đến giờ (trong khoảng 15 phút), tự động chuyển sang IN_PROGRESS
+            // Nếu session chưa bắt đầu nhưng đã đến giờ (trong khoảng 15 phút), tự động
+            // chuyển sang IN_PROGRESS
             if (!session.getStatus().equals(ClassSession.SessionStatus.IN_PROGRESS) &&
-                session.getSessionDate().isBefore(nowLocal.plusMinutes(15))) {
+                    session.getSessionDate().isBefore(nowLocal.plusMinutes(15))) {
                 session.setStatus(ClassSession.SessionStatus.IN_PROGRESS);
                 session.setUpdatedAt(nowLocal);
                 session = classSessionRepository.save(session);
@@ -302,11 +305,13 @@ public class SecureAttendanceService {
                         "FAILED_MISSING_SELFIE");
             }
 
-            // Xử lý ảnh: Nếu đã verify face thành công, dùng tempFaceUrl, nếu không thì upload mới
+            // Xử lý ảnh: Nếu đã verify face thành công, dùng tempFaceUrl, nếu không thì
+            // upload mới
             String imageUrl = null;
             try {
-                System.out.println("📸 Starting image upload for student: " + student.getId() + " (Session: " + session.getId() + ")");
-                
+                System.out.println("📸 Starting image upload for student: " + student.getId() + " (Session: "
+                        + session.getId() + ")");
+
                 // Kiểm tra xem đã có tempFaceUrl từ face verification chưa
                 if (tempFaceUrl != null && faceVerified) {
                     // Dùng ảnh đã verify thành công
@@ -322,12 +327,12 @@ public class SecureAttendanceService {
                             session.getId());
                     System.out.println("✅ Image uploaded successfully: " + imageUrl);
                 }
-                
+
                 // KIỂM TRA BẮT BUỘC: URL phải hợp lệ
                 if (imageUrl == null || imageUrl.trim().isEmpty()) {
                     throw new RuntimeException("Upload thành công nhưng không nhận được URL từ Cloudinary");
                 }
-                
+
             } catch (Exception e) {
                 // 🔴 KHÔNG NUỐT LỖI - Từ chối điểm danh nếu không lưu được ảnh
                 System.err.println("❌ CRITICAL: Failed to upload attendance image!");
@@ -335,12 +340,12 @@ public class SecureAttendanceService {
                 System.err.println("   Session ID: " + session.getId());
                 System.err.println("   Error: " + e.getMessage());
                 e.printStackTrace();
-                
+
                 // Lưu failed record để tracking
                 saveFailedRecord(student, session, request, distance,
                         AttendanceRecord.AttendanceStatus.FAILED_IMAGE_UPLOAD,
                         "Lỗi lưu ảnh minh chứng: " + e.getMessage());
-                
+
                 return AttendanceCheckInResponse.failed(
                         "Không thể lưu ảnh điểm danh. Vui lòng kiểm tra kết nối mạng và thử lại!",
                         "FAILED_IMAGE_UPLOAD");
@@ -363,10 +368,11 @@ public class SecureAttendanceService {
             record.setDeviceUid(request.getDeviceId());
             record.setFaceDataUrl(imageUrl); // Lưu URL Cloudinary thay vì Base64
             record.setStatus(AttendanceRecord.AttendanceStatus.SUCCESS);
-            // ===== STORE-AND-FORWARD: Sử dụng timestamp từ client (thời điểm quét thực tế) =====
-            LocalDateTime checkedInTime = request.getTimestamp() != null 
-                ? LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(request.getTimestamp()), VIETNAM_ZONE)
-                : nowLocal;
+            // ===== STORE-AND-FORWARD: Sử dụng timestamp từ client (thời điểm quét thực tế)
+            // =====
+            LocalDateTime checkedInTime = request.getTimestamp() != null
+                    ? LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(request.getTimestamp()), VIETNAM_ZONE)
+                    : nowLocal;
             record.setCheckedInAt(checkedInTime);
 
             record = attendanceRecordRepository.save(record);
