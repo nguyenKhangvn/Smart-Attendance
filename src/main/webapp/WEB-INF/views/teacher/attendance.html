@@ -1,735 +1,295 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Danh sách điểm danh</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .stat-card {
-        border-radius: 10px;
-        transition: transform 0.2s;
-      }
 
-      .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danh sách điểm danh</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link th:href="@{/css/teacher/attendance.css}" rel="stylesheet" />
+</head>
 
-      .stat-icon {
-        font-size: 2.5rem;
-        opacity: 0.8;
-      }
+<body>
+  <div th:replace="~{layout :: navbar}"></div>
 
-      .status-badge {
-        padding: 0.4rem 0.8rem;
-        border-radius: 5px;
-        font-weight: 500;
-      }
+  <!-- Real-time refresh indicator -->
+  <div class="refresh-indicator" id="refreshIndicator">
+    <i class="fas fa-sync-alt fa-spin me-2"></i>Đang cập nhật...
+  </div>
 
-      .table-hover tbody tr:hover {
-        background-color: #f8f9fa;
-      }
-
-      .new-attendance {
-        animation: highlightRow 2s ease-in-out;
-      }
-
-      @keyframes highlightRow {
-        0% {
-          background-color: #90ee90;
-        }
-        100% {
-          background-color: transparent;
-        }
-      }
-
-      .refresh-indicator {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        z-index: 1000;
-        padding: 10px 20px;
-        background: rgba(0, 123, 255, 0.9);
-        color: white;
-        border-radius: 5px;
-        display: none;
-      }
-
-      .refresh-indicator.show {
-        display: block;
-        animation: fadeInOut 1s ease-in-out;
-      }
-
-      @keyframes fadeInOut {
-        0%,
-        100% {
-          opacity: 0;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
-
-      .sound-toggle {
-        cursor: pointer;
-        transition: all 0.3s;
-      }
-
-      .sound-toggle:hover {
-        transform: scale(1.1);
-      }
-
-      @media print {
-        .no-print {
-          display: none !important;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <div th:replace="~{layout :: navbar}"></div>
-
-    <!-- Real-time refresh indicator -->
-    <div class="refresh-indicator" id="refreshIndicator">
-      <i class="fas fa-sync-alt fa-spin me-2"></i>Đang cập nhật...
+  <div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2>
+          <i class="fas fa-clipboard-check me-2"></i>Danh sách điểm danh
+        </h2>
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+              <a th:href="@{/teacher/dashboard}">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a th:href="@{/teacher/classes/{id}(id=${classEntity.id})}" th:text="${classEntity.classCode}">Class</a>
+            </li>
+            <li class="breadcrumb-item active">Điểm danh</li>
+          </ol>
+        </nav>
+      </div>
+      <a th:href="@{/teacher/classes/{id}(id=${classEntity.id})}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Quay lại
+      </a>
     </div>
 
-    <div class="container mt-4">
-      <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>
-            <i class="fas fa-clipboard-check me-2"></i>Danh sách điểm danh
-          </h2>
-          <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-              <li class="breadcrumb-item">
-                <a th:href="@{/teacher/dashboard}">Dashboard</a>
-              </li>
-              <li class="breadcrumb-item">
-                <a
-                  th:href="@{/teacher/classes/{id}(id=${classEntity.id})}"
-                  th:text="${classEntity.classCode}"
-                  >Class</a
-                >
-              </li>
-              <li class="breadcrumb-item active">Điểm danh</li>
-            </ol>
-          </nav>
-        </div>
-        <a
-          th:href="@{/teacher/classes/{id}(id=${classEntity.id})}"
-          class="btn btn-outline-secondary"
-        >
-          <i class="fas fa-arrow-left me-2"></i>Quay lại
-        </a>
+    <!-- Session Info Card -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-calendar-check me-2"></i>Thông tin buổi học
+        </h5>
       </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-2">
+              <strong><i class="fas fa-book me-2 text-primary"></i>Lớp học:</strong>
+              <span th:text="${classEntity.classCode}"></span> -
+              <span th:text="${classEntity.subjectName}"></span>
+            </p>
+            <p class="mb-2">
+              <strong><i class="fas fa-chalkboard-teacher me-2 text-primary"></i>Tên buổi học:</strong>
+              <span th:text="${attendanceSession.sessionName}"></span>
+            </p>
+            <p class="mb-0">
+              <strong><i class="fas fa-clock me-2 text-primary"></i>Thời
+                gian:</strong>
+              <span th:text="${#temporals.format(attendanceSession.sessionDate, 'dd/MM/yyyy HH:mm')}"></span>
+            </p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-2">
+              <strong><i class="fas fa-hourglass-half me-2 text-primary"></i>Thời
+                lượng:</strong>
+              <span th:text="${attendanceSession.durationMinutes}"></span>
+              phút
+            </p>
+            <p class="mb-2">
+              <strong><i class="fas fa-info-circle me-2 text-primary"></i>Trạng
+                thái:</strong>
+              <span th:if="${attendanceSession.status.name() == 'SCHEDULED'}" class="badge bg-secondary">
+                <i class="fas fa-clock"></i> Đã lên lịch
+              </span>
+              <span th:if="${attendanceSession.status.name() == 'IN_PROGRESS'}" class="badge bg-warning">
+                <i class="fas fa-play"></i> Đang diễn ra
+              </span>
+              <span th:if="${attendanceSession.status.name() == 'COMPLETED'}" class="badge bg-success">
+                <i class="fas fa-check"></i> Hoàn thành
+              </span>
+            </p>
+            <p class="mb-0" th:if="${attendanceSession.notes}">
+              <strong><i class="fas fa-sticky-note me-2 text-primary"></i>Ghi
+                chú:</strong>
+              <span th:text="${attendanceSession.notes}"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <!-- Session Info Card -->
-      <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
+    <!-- Statistics Cards -->
+    <div class="row mb-4" id="statsCards">
+      <div class="col-md-3">
+        <div class="card stat-card border-0 bg-primary text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="mb-0" id="totalStudents" th:text="${totalStudents}">
+                  0
+                </h3>
+                <p class="mb-0 small">Tổng số sinh viên</p>
+              </div>
+              <i class="fas fa-users stat-icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card border-0 bg-success text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="mb-0" id="presentCount" th:text="${presentCount}">
+                  0
+                </h3>
+                <p class="mb-0 small">Đã điểm danh</p>
+              </div>
+              <i class="fas fa-check-circle stat-icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card border-0 bg-danger text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="mb-0" id="absentCount" th:text="${absentCount}">
+                  0
+                </h3>
+                <p class="mb-0 small">Vắng mặt</p>
+              </div>
+              <i class="fas fa-user-times stat-icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stat-card border-0 bg-info text-white">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h3 class="mb-0" id="attendanceRate" th:text="${#numbers.formatDecimal(attendanceRate, 1, 1)} + '%'">
+                  0%
+                </h3>
+                <p class="mb-0 small">Tỷ lệ điểm danh</p>
+              </div>
+              <i class="fas fa-chart-pie stat-icon"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance List -->
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
           <h5 class="mb-0">
-            <i class="fas fa-calendar-check me-2"></i>Thông tin buổi học
+            <i class="fas fa-list-check me-2"></i>Danh sách chi tiết
           </h5>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6">
-              <p class="mb-2">
-                <strong
-                  ><i class="fas fa-book me-2 text-primary"></i>Lớp học:</strong
-                >
-                <span th:text="${classEntity.classCode}"></span> -
-                <span th:text="${classEntity.subjectName}"></span>
-              </p>
-              <p class="mb-2">
-                <strong
-                  ><i class="fas fa-chalkboard-teacher me-2 text-primary"></i
-                  >Tên buổi học:</strong
-                >
-                <span th:text="${attendanceSession.sessionName}"></span>
-              </p>
-              <p class="mb-0">
-                <strong
-                  ><i class="fas fa-clock me-2 text-primary"></i>Thời
-                  gian:</strong
-                >
-                <span
-                  th:text="${#temporals.format(attendanceSession.sessionDate, 'dd/MM/yyyy HH:mm')}"
-                ></span>
-              </p>
-            </div>
-            <div class="col-md-6">
-              <p class="mb-2">
-                <strong
-                  ><i class="fas fa-hourglass-half me-2 text-primary"></i>Thời
-                  lượng:</strong
-                >
-                <span th:text="${attendanceSession.durationMinutes}"></span>
-                phút
-              </p>
-              <p class="mb-2">
-                <strong
-                  ><i class="fas fa-info-circle me-2 text-primary"></i>Trạng
-                  thái:</strong
-                >
-                <span
-                  th:if="${attendanceSession.status.name() == 'SCHEDULED'}"
-                  class="badge bg-secondary"
-                >
-                  <i class="fas fa-clock"></i> Đã lên lịch
-                </span>
-                <span
-                  th:if="${attendanceSession.status.name() == 'IN_PROGRESS'}"
-                  class="badge bg-warning"
-                >
-                  <i class="fas fa-play"></i> Đang diễn ra
-                </span>
-                <span
-                  th:if="${attendanceSession.status.name() == 'COMPLETED'}"
-                  class="badge bg-success"
-                >
-                  <i class="fas fa-check"></i> Hoàn thành
-                </span>
-              </p>
-              <p class="mb-0" th:if="${attendanceSession.notes}">
-                <strong
-                  ><i class="fas fa-sticky-note me-2 text-primary"></i>Ghi
-                  chú:</strong
-                >
-                <span th:text="${attendanceSession.notes}"></span>
-              </p>
-            </div>
+          <div class="d-flex align-items-center gap-2 flex-wrap no-print">
+            <span class="badge bg-secondary">
+              <i class="fas fa-sync-alt"></i> Tự động cập nhật:
+              <span id="autoRefreshStatus">Bật</span>
+            </span>
+            <span class="badge bg-info sound-toggle" id="soundToggle" title="Bật/tắt âm thanh thông báo">
+              <i class="fas fa-volume-up" id="soundIcon"></i>
+            </span>
+            <button class="btn btn-sm btn-outline-primary" id="toggleAutoRefresh"
+              title="Tạm dừng/Tiếp tục tự động cập nhật">
+              <i class="fas fa-pause"></i> Tạm dừng
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="refreshNow()" title="Làm mới ngay lập tức">
+              <i class="fas fa-sync-alt"></i> Làm mới
+            </button>
+            <button class="btn btn-sm btn-success" onclick="exportToExcel()" title="Xuất file Excel">
+              <i class="fas fa-file-excel me-1"></i>Excel
+            </button>
+            <button class="btn btn-sm btn-primary" onclick="window.print()" title="In danh sách">
+              <i class="fas fa-print me-1"></i>In
+            </button>
           </div>
         </div>
       </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="attendanceTable">
+            <thead class="table-light">
+              <tr>
+                <th>#</th>
+                <th>Mã SV</th>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Trạng thái</th>
+                <th>Thời gian</th>
+                <th>Khoảng cách (m)</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="student, iterStat : ${classEntity.students}" th:attr="data-student-id=${student.id}">
+                <td th:text="${iterStat.count}">1</td>
+                <td>
+                  <strong th:text="${student.studentCode}">20210001</strong>
+                </td>
+                <td th:text="${student.fullName}">Nguyễn Văn A</td>
+                <td th:text="${student.email}">student@example.com</td>
+                <td>
+                  <th:block th:with="record=${attendanceMap.get(student.id)}">
+                    <span th:if="${record != null && record.status.name() == 'SUCCESS'}"
+                      class="badge bg-success status-badge">
+                      <i class="fas fa-check-circle"></i> Có mặt
+                    </span>
 
-      <!-- Statistics Cards -->
-      <div class="row mb-4" id="statsCards">
-        <div class="col-md-3">
-          <div class="card stat-card border-0 bg-primary text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h3
-                    class="mb-0"
-                    id="totalStudents"
-                    th:text="${totalStudents}"
-                  >
-                    0
-                  </h3>
-                  <p class="mb-0 small">Tổng số sinh viên</p>
-                </div>
-                <i class="fas fa-users stat-icon"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card stat-card border-0 bg-success text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h3 class="mb-0" id="presentCount" th:text="${presentCount}">
-                    0
-                  </h3>
-                  <p class="mb-0 small">Đã điểm danh</p>
-                </div>
-                <i class="fas fa-check-circle stat-icon"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card stat-card border-0 bg-danger text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h3 class="mb-0" id="absentCount" th:text="${absentCount}">
-                    0
-                  </h3>
-                  <p class="mb-0 small">Vắng mặt</p>
-                </div>
-                <i class="fas fa-user-times stat-icon"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card stat-card border-0 bg-info text-white">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h3
-                    class="mb-0"
-                    id="attendanceRate"
-                    th:text="${#numbers.formatDecimal(attendanceRate, 1, 1)} + '%'"
-                  >
-                    0%
-                  </h3>
-                  <p class="mb-0 small">Tỷ lệ điểm danh</p>
-                </div>
-                <i class="fas fa-chart-pie stat-icon"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+                    <span th:if="${record != null && record.status.name() == 'LATE'}"
+                      class="badge bg-warning status-badge">
+                      <i class="fas fa-clock"></i> Đi muộn
+                    </span>
 
-      <!-- Attendance List -->
-      <div class="card shadow-sm">
-        <div class="card-header bg-light">
-          <div
-            class="d-flex justify-content-between align-items-center flex-wrap"
-          >
-            <h5 class="mb-0">
-              <i class="fas fa-list-check me-2"></i>Danh sách chi tiết
-            </h5>
-            <div class="d-flex align-items-center gap-2 flex-wrap no-print">
-              <span class="badge bg-secondary">
-                <i class="fas fa-sync-alt"></i> Tự động cập nhật:
-                <span id="autoRefreshStatus">Bật</span>
-              </span>
-              <span
-                class="badge bg-info sound-toggle"
-                id="soundToggle"
-                title="Bật/tắt âm thanh thông báo"
-              >
-                <i class="fas fa-volume-up" id="soundIcon"></i>
-              </span>
-              <button
-                class="btn btn-sm btn-outline-primary"
-                id="toggleAutoRefresh"
-                title="Tạm dừng/Tiếp tục tự động cập nhật"
-              >
-                <i class="fas fa-pause"></i> Tạm dừng
-              </button>
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                onclick="refreshNow()"
-                title="Làm mới ngay lập tức"
-              >
-                <i class="fas fa-sync-alt"></i> Làm mới
-              </button>
-              <button
-                class="btn btn-sm btn-success"
-                onclick="exportToExcel()"
-                title="Xuất file Excel"
-              >
-                <i class="fas fa-file-excel me-1"></i>Excel
-              </button>
-              <button
-                class="btn btn-sm btn-primary"
-                onclick="window.print()"
-                title="In danh sách"
-              >
-                <i class="fas fa-print me-1"></i>In
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0" id="attendanceTable">
-              <thead class="table-light">
-                <tr>
-                  <th>#</th>
-                  <th>Mã SV</th>
-                  <th>Họ và tên</th>
-                  <th>Email</th>
-                  <th>Trạng thái</th>
-                  <th>Thời gian</th>
-                  <th>Khoảng cách (m)</th>
-                  <th>Ghi chú</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  th:each="student, iterStat : ${classEntity.students}"
-                  th:attr="data-student-id=${student.id}"
-                >
-                  <td th:text="${iterStat.count}">1</td>
-                  <td>
-                    <strong th:text="${student.studentCode}">20210001</strong>
-                  </td>
-                  <td th:text="${student.fullName}">Nguyễn Văn A</td>
-                  <td th:text="${student.email}">student@example.com</td>
-                  <td>
-                    <th:block th:with="record=${attendanceMap.get(student.id)}">
-                      <span
-                        th:if="${record != null && record.status.name() == 'SUCCESS'}"
-                        class="badge bg-success status-badge"
-                      >
-                        <i class="fas fa-check-circle"></i> Có mặt
-                      </span>
+                    <span th:if="${record != null && record.status.name() == 'FAILED_DISTANCE'}"
+                      class="badge bg-danger status-badge">
+                      <i class="fas fa-map-marker-alt"></i> Quá xa
+                    </span>
 
-                      <span
-                        th:if="${record != null && record.status.name() == 'LATE'}"
-                        class="badge bg-warning status-badge"
-                      >
-                        <i class="fas fa-clock"></i> Đi muộn
-                      </span>
+                    <span th:if="${record != null && record.status.name() == 'FAILED_ALREADY_CHECKED'}"
+                      class="badge bg-warning status-badge">
+                      <i class="fas fa-exclamation-triangle"></i> Đã điểm danh
+                    </span>
 
-                      <span
-                        th:if="${record != null && record.status.name() == 'FAILED_DISTANCE'}"
-                        class="badge bg-danger status-badge"
-                      >
-                        <i class="fas fa-map-marker-alt"></i> Quá xa
-                      </span>
+                    <span th:if="${record != null && record.status.name() == 'FAILED_DUPLICATE_DEVICE'}"
+                      class="badge bg-danger status-badge">
+                      <i class="fas fa-mobile-alt"></i> Thiết bị trùng
+                    </span>
 
-                      <span
-                        th:if="${record != null && record.status.name() == 'FAILED_ALREADY_CHECKED'}"
-                        class="badge bg-warning status-badge"
-                      >
-                        <i class="fas fa-exclamation-triangle"></i> Đã điểm danh
-                      </span>
+                    <span th:if="${record != null && record.status.name() == 'FAILED_INVALID_QR'}"
+                      class="badge bg-danger status-badge">
+                      <i class="fas fa-qrcode"></i> QR không hợp lệ
+                    </span>
 
-                      <span
-                        th:if="${record != null && record.status.name() == 'FAILED_DUPLICATE_DEVICE'}"
-                        class="badge bg-danger status-badge"
-                      >
-                        <i class="fas fa-mobile-alt"></i> Thiết bị trùng
-                      </span>
-
-                      <span
-                        th:if="${record != null && record.status.name() == 'FAILED_INVALID_QR'}"
-                        class="badge bg-danger status-badge"
-                      >
-                        <i class="fas fa-qrcode"></i> QR không hợp lệ
-                      </span>
-
-                      <span
-                        th:if="${record == null || record.status.name() == 'ABSENT'}"
-                        class="badge bg-secondary status-badge"
-                      >
-                        <i class="fas fa-times-circle"></i> Vắng
-                      </span>
-                    </th:block>
-                  </td>
-                  <td>
-                    <th:block th:with="record=${attendanceMap.get(student.id)}">
-                      <span
-                        th:if="${record != null}"
-                        th:text="${#temporals.format(record.checkedInAt, 'HH:mm:ss dd/MM')}"
-                        >--:--:--</span
-                      >
-                      <span th:if="${record == null}" class="text-muted"
-                        >--:--:--</span
-                      >
-                    </th:block>
-                  </td>
-                  <td>
-                    <th:block th:with="record=${attendanceMap.get(student.id)}">
-                      <span
-                        th:if="${record != null}"
-                        th:text="${#numbers.formatDecimal(record.distanceMeters, 1, 2)}"
-                        >0</span
-                      >
-                      <span th:if="${record == null}" class="text-muted"
-                        >--</span
-                      >
-                    </th:block>
-                  </td>
-                  <td>
-                    <th:block th:with="record=${attendanceMap.get(student.id)}">
-                      <span
-                        th:if="${record != null && record.failReason != null}"
-                        th:text="${record.failReason}"
-                        class="text-muted small"
-                      ></span>
-                      <span
-                        th:if="${record != null && record.modificationNote != null}"
-                        th:text="${record.modificationNote}"
-                        class="text-info small fst-italic"
-                      ></span>
-                    </th:block>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <span th:if="${record == null || record.status.name() == 'ABSENT'}"
+                      class="badge bg-secondary status-badge">
+                      <i class="fas fa-times-circle"></i> Vắng
+                    </span>
+                  </th:block>
+                </td>
+                <td>
+                  <th:block th:with="record=${attendanceMap.get(student.id)}">
+                    <span th:if="${record != null}"
+                      th:text="${#temporals.format(record.checkedInAt, 'HH:mm:ss dd/MM')}">--:--:--</span>
+                    <span th:if="${record == null}" class="text-muted">--:--:--</span>
+                  </th:block>
+                </td>
+                <td>
+                  <th:block th:with="record=${attendanceMap.get(student.id)}">
+                    <span th:if="${record != null}"
+                      th:text="${#numbers.formatDecimal(record.distanceMeters, 1, 2)}">0</span>
+                    <span th:if="${record == null}" class="text-muted">--</span>
+                  </th:block>
+                </td>
+                <td>
+                  <th:block th:with="record=${attendanceMap.get(student.id)}">
+                    <span th:if="${record != null && record.failReason != null}" th:text="${record.failReason}"
+                      class="text-muted small"></span>
+                    <span th:if="${record != null && record.modificationNote != null}"
+                      th:text="${record.modificationNote}" class="text-info small fst-italic"></span>
+                  </th:block>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-      // Lấy ID session từ Thymeleaf
-      const sessionId = /*[[${attendanceSession.id}]]*/ 0;
-      const contextPath = window.location.pathname.split("/")[1]; // Xử lý context path nếu có
+  <!-- Data attributes for JavaScript -->
+  <div style="display: none;"
+    th:attr="data-session-id=${attendanceSession.id}, data-initial-records=${attendanceRecordsJson}">
+  </div>
 
-      // Cấu hình
-      let autoRefreshEnabled = true;
-      let refreshInterval;
-      let soundEnabled = true;
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script th:src="@{/js/teacher/attendance.js}"></script>
+</body>
 
-      // Khởi chạy khi trang tải xong
-      document.addEventListener("DOMContentLoaded", function () {
-        console.log("Page loaded. Initializing...");
-
-        // 1. Load dữ liệu ban đầu từ Server
-        loadInitialData();
-
-        // 2. Bắt đầu tự động cập nhật
-        startAutoRefresh();
-
-        // 3. Gán sự kiện cho các nút
-        document
-          .getElementById("toggleAutoRefresh")
-          .addEventListener("click", toggleAutoRefresh);
-        document
-          .getElementById("soundToggle")
-          .addEventListener("click", toggleSound);
-      });
-
-      function loadInitialData() {
-        // Lấy dữ liệu JSON từ Controller truyền sang
-        const attendanceRecords = /*[[${attendanceRecords}]]*/ [];
-
-        console.log("Initial Records:", attendanceRecords);
-
-        // Cập nhật ngay lập tức các thẻ thống kê
-        updateStatistics(attendanceRecords);
-      }
-
-      function startAutoRefresh() {
-        // Xóa interval cũ nếu có để tránh trùng lặp
-        if (refreshInterval) clearInterval(refreshInterval);
-
-        refreshInterval = setInterval(() => {
-          if (autoRefreshEnabled) {
-            fetchAttendanceData();
-          }
-        }, 3000); // 3 giây cập nhật 1 lần
-      }
-
-      // Hàm gọi API lấy dữ liệu mới nhất
-      async function fetchAttendanceData() {
-        try {
-          showRefreshIndicator();
-
-          // Fix đường dẫn API: đảm bảo không bị thừa/thiếu dấu /
-          const apiUrl = contextPath
-            ? `/${contextPath}/api/attendance/session/${sessionId}`
-            : `/api/attendance/session/${sessionId}`;
-
-          const response = await fetch(apiUrl);
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch attendance data");
-          }
-
-          const records = await response.json();
-          // Cập nhật lại bảng và thống kê
-          updateAttendanceTable(records);
-          updateStatistics(records);
-        } catch (error) {
-          console.error("Error fetching attendance:", error);
-        }
-      }
-
-      // --- LOGIC QUAN TRỌNG: CẬP NHẬT THỐNG KÊ ---
-      function updateStatistics(records) {
-        // 1. Tổng số sinh viên = Số dòng trong bảng (chính xác nhất theo danh sách lớp)
-        const totalStudents = document.querySelectorAll(
-          "#attendanceTable tbody tr"
-        ).length;
-
-        // 2. Đếm số lượng "Đã điểm danh" (Chỉ tính SUCCESS và LATE)
-        // Lưu ý: records là danh sách điểm danh, ai chưa điểm danh sẽ không có trong list này hoặc status là null
-        let presentCount = 0;
-
-        if (records && Array.isArray(records)) {
-          presentCount = records.filter(
-            (r) => r.status === "SUCCESS" || r.status === "LATE"
-          ).length;
-        }
-
-        // 3. Vắng mặt = Tổng - Đã điểm danh
-        // (Bao gồm: Chưa điểm danh, Điểm danh thất bại, Lỗi thiết bị...)
-        const absentCount = totalStudents - presentCount;
-
-        // 4. Tỷ lệ
-        const attendanceRate =
-          totalStudents > 0
-            ? ((presentCount / totalStudents) * 100).toFixed(1)
-            : 0;
-
-        // 5. Render lên giao diện
-        document.getElementById("totalStudents").innerText = totalStudents;
-        document.getElementById("presentCount").innerText = presentCount;
-        document.getElementById("absentCount").innerText = absentCount;
-        document.getElementById("attendanceRate").innerText =
-          attendanceRate + "%";
-
-        console.log(
-          `Stats Updated: Total=${totalStudents}, Present=${presentCount}, Absent=${absentCount}`
-        );
-      }
-
-      function updateAttendanceTable(records) {
-        const rows = document.querySelectorAll("#attendanceTable tbody tr");
-
-        rows.forEach((row) => {
-          // Lấy Student Code từ cột thứ 2 (index 1)
-          const studentCodeEl = row.cells[1].querySelector("strong");
-          if (!studentCodeEl) return;
-          const studentCode = studentCodeEl.textContent.trim();
-
-          // Tìm record tương ứng trong danh sách mới tải về
-          const record = records.find(
-            (r) => r.student.studentCode === studentCode
-          );
-
-          // Kiểm tra trạng thái cũ để phát hiện thay đổi (dùng cho hiệu ứng)
-          const wasAbsent = row.cells[4]
-            .querySelector(".badge")
-            ?.classList.contains("bg-secondary");
-          const isNowPresent =
-            record && (record.status === "SUCCESS" || record.status === "LATE");
-
-          if (record) {
-            // Có record -> Cập nhật thông tin
-            row.cells[4].innerHTML = getStatusBadge(record.status);
-            row.cells[5].innerHTML = formatDateTime(record.checkedInAt);
-            row.cells[6].innerHTML = record.distanceMeters
-              ? record.distanceMeters.toFixed(2)
-              : "--";
-            row.cells[7].innerHTML =
-              record.failReason ||
-              (record.modificationNote
-                ? `<span class="text-info small fst-italic">${record.modificationNote}</span>`
-                : "");
-
-            // Hiệu ứng highlight & âm thanh nếu vừa điểm danh thành công
-            if (wasAbsent && isNowPresent) {
-              row.classList.add("new-attendance");
-              setTimeout(() => row.classList.remove("new-attendance"), 2000);
-              if (soundEnabled) playNotificationSound();
-            }
-          } else {
-            // Không có record -> Reset về trạng thái Vắng
-            row.cells[4].innerHTML =
-              '<span class="badge bg-secondary status-badge"><i class="fas fa-times-circle"></i> Vắng</span>';
-            row.cells[5].innerHTML = '<span class="text-muted">--:--:--</span>';
-            row.cells[6].innerHTML = '<span class="text-muted">--</span>';
-            row.cells[7].innerHTML = "";
-          }
-        });
-      }
-
-      function getStatusBadge(status) {
-        const badges = {
-          SUCCESS:
-            '<span class="badge bg-success status-badge"><i class="fas fa-check-circle"></i> Có mặt</span>',
-          LATE: '<span class="badge bg-warning status-badge"><i class="fas fa-clock"></i> Đi muộn</span>',
-          FAILED_DISTANCE:
-            '<span class="badge bg-danger status-badge"><i class="fas fa-map-marker-alt"></i> Quá xa</span>',
-          FAILED_ALREADY_CHECKED:
-            '<span class="badge bg-warning status-badge"><i class="fas fa-exclamation-triangle"></i> Đã điểm danh</span>',
-          FAILED_DUPLICATE_DEVICE:
-            '<span class="badge bg-danger status-badge"><i class="fas fa-mobile-alt"></i> Thiết bị trùng</span>',
-          FAILED_INVALID_QR:
-            '<span class="badge bg-danger status-badge"><i class="fas fa-qrcode"></i> QR không hợp lệ</span>',
-          ABSENT:
-            '<span class="badge bg-secondary status-badge"><i class="fas fa-times-circle"></i> Vắng</span>',
-        };
-        return badges[status] || badges["ABSENT"];
-      }
-
-      function formatDateTime(dateTimeStr) {
-        if (!dateTimeStr) return '<span class="text-muted">--:--:--</span>';
-        const date = new Date(dateTimeStr);
-        return `${String(date.getHours()).padStart(2, "0")}:${String(
-          date.getMinutes()
-        ).padStart(2, "0")}:${String(date.getSeconds()).padStart(
-          2,
-          "0"
-        )} ${String(date.getDate()).padStart(2, "0")}/${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}`;
-      }
-
-      function toggleAutoRefresh() {
-        autoRefreshEnabled = !autoRefreshEnabled;
-        const btn = document.getElementById("toggleAutoRefresh");
-        const statusSpan = document.getElementById("autoRefreshStatus");
-        if (autoRefreshEnabled) {
-          btn.innerHTML = '<i class="fas fa-pause"></i> Tạm dừng';
-          statusSpan.textContent = "Bật";
-          statusSpan.parentElement.className = "badge bg-secondary";
-        } else {
-          btn.innerHTML = '<i class="fas fa-play"></i> Tiếp tục';
-          statusSpan.textContent = "Tắt";
-          statusSpan.parentElement.className = "badge bg-danger";
-        }
-      }
-
-      function toggleSound() {
-        soundEnabled = !soundEnabled;
-        const icon = document.getElementById("soundIcon");
-        const badge = document.getElementById("soundToggle");
-        if (soundEnabled) {
-          icon.className = "fas fa-volume-up";
-          badge.className = "badge bg-info sound-toggle";
-        } else {
-          icon.className = "fas fa-volume-mute";
-          badge.className = "badge bg-secondary sound-toggle";
-        }
-      }
-
-      function showRefreshIndicator() {
-        const indicator = document.getElementById("refreshIndicator");
-        indicator.classList.add("show");
-        setTimeout(() => indicator.classList.remove("show"), 1000);
-      }
-
-      function playNotificationSound() {
-        try {
-          const audioCtx = new (window.AudioContext ||
-            window.webkitAudioContext)();
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.frequency.value = 800;
-          gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(
-            0.001,
-            audioCtx.currentTime + 0.1
-          );
-          osc.start();
-          osc.stop(audioCtx.currentTime + 0.1);
-        } catch (e) {}
-      }
-
-      function refreshNow() {
-        fetchAttendanceData();
-      }
-
-      function exportToExcel() {
-        // Code export excel (giữ nguyên)
-        let table = document.getElementById("attendanceTable");
-        let html = table.outerHTML;
-        let url = "data:application/vnd.ms-excel," + encodeURIComponent(html);
-        let link = document.createElement("a");
-        link.href = url;
-        link.download = `attendance_${sessionId}.xls`;
-        link.click();
-      }
-
-      window.addEventListener("beforeunload", () => {
-        if (refreshInterval) clearInterval(refreshInterval);
-      });
-    </script>
-  </body>
 </html>

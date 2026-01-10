@@ -1,185 +1,62 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QR Code - Smart Attendance</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      .qr-container {
-        background: white;
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
 
-      #qrCode {
-        max-width: 400px;
-        margin: 20px auto;
-        border: 5px solid #007bff;
-        border-radius: 10px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Code - Smart Attendance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link th:href="@{/css/teacher/qr-scanner.css}" rel="stylesheet" />
+</head>
 
-      .timer {
-        font-size: 3rem;
-        font-weight: bold;
-        color: #28a745;
-      }
+<body class="bg-light">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="qr-container">
+          <h2 class="mb-4"><i class="fas fa-qrcode"></i> Mã QR Điểm Danh</h2>
+          <h4 th:text="${classSession.sessionName}">Session Name</h4>
+          <p class="text-muted" th:text="${classSession.classEntity.subjectName}">
+            Class Name
+          </p>
 
-      .timer.warning {
-        color: #ffc107;
-      }
-
-      .timer.danger {
-        color: #dc3545;
-      }
-    </style>
-  </head>
-
-  <body class="bg-light">
-    <div class="container py-5">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="qr-container">
-            <h2 class="mb-4"><i class="fas fa-qrcode"></i> Mã QR Điểm Danh</h2>
-            <h4 th:text="${classSession.sessionName}">Session Name</h4>
-            <p
-              class="text-muted"
-              th:text="${classSession.classEntity.subjectName}"
-            >
-              Class Name
-            </p>
-
-            <div id="qrCode" class="mb-4">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
+          <div id="qrCode" class="mb-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
             </div>
+          </div>
 
-            <div class="mb-4">
-              <p class="mb-2">Thời gian còn lại:</p>
-              <div class="timer" id="timer">05:00</div>
-            </div>
+          <div class="mb-4">
+            <p class="mb-2">Thời gian còn lại:</p>
+            <div class="timer" id="timer">05:00</div>
+          </div>
 
-            <div class="alert alert-info">
-              <i class="fas fa-info-circle"></i>
-              Sinh viên hãy quét mã QR này để điểm danh. Mã QR sẽ tự động hết
-              hạn sau 5 phút.
-            </div>
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            Sinh viên hãy quét mã QR này để điểm danh. Mã QR sẽ tự động hết
+            hạn sau 5 phút.
+          </div>
 
-            <div class="mt-4">
-              <button class="btn btn-primary btn-lg" id="regenerateBtn">
-                <i class="fas fa-sync"></i> Tạo mã mới
-              </button>
-              <a
-                th:href="@{/teacher/sessions/{id}/attendance(id=${classSession.id})}"
-                class="btn btn-success btn-lg"
-              >
-                <i class="fas fa-list-check"></i> Xem điểm danh
-              </a>
-            </div>
+          <div class="mt-4">
+            <button class="btn btn-primary btn-lg" id="regenerateBtn">
+              <i class="fas fa-sync"></i> Tạo mã mới
+            </button>
+            <a th:href="@{/teacher/sessions/{id}/attendance(id=${classSession.id})}" class="btn btn-success btn-lg">
+              <i class="fas fa-list-check"></i> Xem điểm danh
+            </a>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:inline="javascript">
-      const sessionId = /*[[${classSession.id}]]*/ 0;
-      let timerInterval;
-      let expirationTime;
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script th:inline="javascript">
+    const sessionId = /*[[${classSession.id}]]*/ 0;
+  </script>
+  <script th:src="@{/js/teacher/qr-scanner.js}"></script>
+</body>
 
-      function generateQRCode() {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            function (position) {
-              const latitude = position.coords.latitude;
-              const longitude = position.coords.longitude;
-
-              // Get context path dynamically
-              const contextPath = window.location.pathname.split("/")[1];
-              const apiUrl = `/${contextPath}/api/qr/generate`;
-
-              $.ajax({
-                url: apiUrl,
-                method: "POST",
-                data: {
-                  sessionId: sessionId,
-                  latitude: latitude,
-                  longitude: longitude,
-                  expirationMinutes: 5,
-                  maxDistanceMeters: 50,
-                },
-                success: function (response) {
-                  $("#qrCode").html(
-                    '<img src="' +
-                      response.qrCodeBase64 +
-                      '" class="img-fluid" alt="QR Code">'
-                  );
-
-                  expirationTime = response.expiresInSeconds;
-                  startTimer(expirationTime);
-                },
-                error: function (error) {
-                  alert("Không thể tạo mã QR: " + error.responseText);
-                },
-              });
-            },
-            function (error) {
-              alert("Không thể lấy vị trí GPS. Vui lòng bật định vị!");
-            }
-          );
-        } else {
-          alert("Trình duyệt không hỗ trợ Geolocation!");
-        }
-      }
-
-      function startTimer(seconds) {
-        clearInterval(timerInterval);
-
-        timerInterval = setInterval(function () {
-          const minutes = Math.floor(seconds / 60);
-          const secs = seconds % 60;
-
-          $("#timer").text(
-            String(minutes).padStart(2, "0") +
-              ":" +
-              String(secs).padStart(2, "0")
-          );
-
-          if (seconds <= 60) {
-            $("#timer").removeClass("warning").addClass("danger");
-          } else if (seconds <= 120) {
-            $("#timer").addClass("warning").removeClass("danger");
-          }
-
-          if (seconds <= 0) {
-            clearInterval(timerInterval);
-            $("#qrCode").html(
-              '<p class="text-danger">Mã QR đã hết hạn. Vui lòng tạo mã mới!</p>'
-            );
-          }
-
-          seconds--;
-        }, 1000);
-      }
-
-      $(document).ready(function () {
-        generateQRCode();
-
-        $("#regenerateBtn").click(function () {
-          generateQRCode();
-        });
-      });
-    </script>
-  </body>
 </html>

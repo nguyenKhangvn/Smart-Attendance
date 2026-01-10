@@ -1,272 +1,61 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Scan QR Code - Smart Attendance</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <style>
-      #reader {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-      }
 
-      #preview {
-        width: 100%;
-        max-width: 400px;
-        margin: 20px auto;
-        border: 3px solid #007bff;
-        border-radius: 10px;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan QR Code - Smart Attendance</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link th:href="@{/css/student/scan-qr.css}" rel="stylesheet" />
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
 
-  <body>
-    <div th:replace="~{layout :: navbar}"></div>
+<body>
+  <div th:replace="~{layout :: navbar}"></div>
 
-    <div class="container mt-4">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card">
-            <div class="card-header bg-primary text-white">
-              <h4 class="mb-0">
-                <i class="fas fa-qrcode"></i> Quét mã QR điểm danh
-              </h4>
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">
+              <i class="fas fa-qrcode"></i> Quét mã QR điểm danh
+            </h4>
+          </div>
+          <div class="card-body">
+            <!-- QR Scanner -->
+            <div id="reader" class="mb-4"></div>
+
+            <!-- Camera Preview -->
+            <div class="text-center mb-3">
+              <h5>Chụp ảnh selfie</h5>
+              <video id="preview" autoplay playsinline></video>
+              <canvas id="canvas" style="display: none"></canvas>
             </div>
-            <div class="card-body">
-              <!-- QR Scanner -->
-              <div id="reader" class="mb-4"></div>
 
-              <!-- Camera Preview -->
-              <div class="text-center mb-3">
-                <h5>Chụp ảnh selfie</h5>
-                <video id="preview" autoplay playsinline></video>
-                <canvas id="canvas" style="display: none"></canvas>
-              </div>
+            <!-- Result -->
+            <div id="result" class="alert" style="display: none"></div>
 
-              <!-- Result -->
-              <div id="result" class="alert" style="display: none"></div>
-
-              <!-- Instructions -->
-              <div class="alert alert-info">
-                <h6><i class="fas fa-info-circle"></i> Hướng dẫn:</h6>
-                <ol class="mb-0">
-                  <li>Di chuyển camera để quét mã QR từ màn hình</li>
-                  <li>Hệ thống sẽ tự động chụp ảnh selfie từ camera trước</li>
-                  <li>Đảm bảo bạn đang ở trong lớp học (kiểm tra GPS)</li>
-                  <li>Chờ kết quả điểm danh</li>
-                </ol>
-              </div>
+            <!-- Instructions -->
+            <div class="alert alert-info">
+              <h6><i class="fas fa-info-circle"></i> Hướng dẫn:</h6>
+              <ol class="mb-0">
+                <li>Di chuyển camera để quét mã QR từ màn hình</li>
+                <li>Hệ thống sẽ tự động chụp ảnh selfie từ camera trước</li>
+                <li>Đảm bảo bạn đang ở trong lớp học (kiểm tra GPS)</li>
+                <li>Chờ kết quả điểm danh</li>
+              </ol>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      let html5QrCode;
-      let videoStream;
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script th:src="@{/js/student/scan-qr.js}"></script>
+</body>
 
-      // Initialize camera for selfie
-      async function initCamera() {
-        try {
-          videoStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-          });
-          document.getElementById("preview").srcObject = videoStream;
-        } catch (error) {
-          console.error("Error accessing camera:", error);
-          showResult(
-            "Không thể truy cập camera. Vui lòng cho phép truy cập camera!",
-            "danger"
-          );
-        }
-      }
-
-      // Capture selfie
-      function captureSelfie() {
-        const video = document.getElementById("preview");
-        const canvas = document.getElementById("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext("2d").drawImage(video, 0, 0);
-        return canvas.toDataURL("image/jpeg");
-      }
-
-      // Initialize QR Scanner
-      function initQRScanner() {
-        html5QrCode = new Html5Qrcode("reader");
-
-        Html5Qrcode.getCameras()
-          .then((cameras) => {
-            if (cameras && cameras.length) {
-              // Use back camera if available
-              const cameraId =
-                cameras.length > 1 ? cameras[1].id : cameras[0].id;
-
-              html5QrCode
-                .start(
-                  cameraId,
-                  {
-                    fps: 10,
-                    qrbox: { width: 250, height: 250 },
-                  },
-                  onScanSuccess,
-                  onScanFailure
-                )
-                .catch((err) => {
-                  console.error("Unable to start scanner:", err);
-                });
-            }
-          })
-          .catch((err) => {
-            console.error("Error getting cameras:", err);
-          });
-      }
-
-      function onScanSuccess(decodedText, decodedResult) {
-        // Parse QR content: JSON format {"sessionId":1,"token":"xxx"}
-        let qrData;
-        try {
-          qrData = JSON.parse(decodedText);
-          if (!qrData.sessionId || !qrData.token) {
-            showResult(
-              "Mã QR không hợp lệ! Thiếu sessionId hoặc token",
-              "danger"
-            );
-            return;
-          }
-        } catch (e) {
-          showResult("Mã QR không hợp lệ! Format không đúng", "danger");
-          return;
-        }
-
-        const qrId = qrData.sessionId;
-        const tokenSecret = qrData.token;
-
-        // Stop scanning
-        html5QrCode.stop();
-
-        // Get location
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            function (position) {
-              performCheckIn(
-                qrId,
-                tokenSecret,
-                position.coords.latitude,
-                position.coords.longitude
-              );
-            },
-            function (error) {
-              showResult(
-                "Không thể lấy vị trí GPS. Vui lòng bật định vị!",
-                "danger"
-              );
-            }
-          );
-        } else {
-          showResult("Trình duyệt không hỗ trợ Geolocation!", "danger");
-        }
-      }
-
-      function onScanFailure(error) {
-        // Ignore scan failures
-      }
-
-      function performCheckIn(qrId, tokenSecret, latitude, longitude) {
-        showResult("Đang xử lý điểm danh...", "info");
-
-        // Capture selfie
-        const imageData = captureSelfie();
-
-        // Get device fingerprint (simple version)
-        const deviceUid =
-          navigator.userAgent + "|" + screen.width + "x" + screen.height;
-
-        // Get context path dynamically
-        const contextPath = window.location.pathname.split("/")[1];
-        const apiUrl = `/${contextPath}/api/attendance/checkin`;
-
-        $.ajax({
-          url: apiUrl,
-          method: "POST",
-          contentType: "application/json",
-          data: JSON.stringify({
-            sessionId: qrId, // Changed from qrId to sessionId
-            tokenSecret: tokenSecret,
-            studentLat: latitude,
-            studentLong: longitude,
-            deviceUid: deviceUid,
-            imageData: imageData,
-          }),
-          success: function (response) {
-            if (response.success) {
-              showResult(
-                "Điểm danh thành công! Khoảng cách: " +
-                  response.distance.toFixed(2) +
-                  "m",
-                "success"
-              );
-              setTimeout(function () {
-                const contextPath = window.location.pathname.split("/")[1];
-                window.location.href = `/${contextPath}/student/dashboard`;
-              }, 2000);
-            } else {
-              showResult("Điểm danh thất bại: " + response.message, "danger");
-              setTimeout(function () {
-                initQRScanner();
-              }, 3000);
-            }
-          },
-          error: function (xhr) {
-            const response = xhr.responseJSON;
-            showResult(
-              "Lỗi: " +
-                (response ? response.message : "Không thể kết nối server"),
-              "danger"
-            );
-            setTimeout(function () {
-              initQRScanner();
-            }, 3000);
-          },
-        });
-      }
-
-      function showResult(message, type) {
-        const resultDiv = $("#result");
-        resultDiv.removeClass(
-          "alert-success alert-danger alert-info alert-warning"
-        );
-        resultDiv.addClass("alert-" + type);
-        resultDiv.html(
-          '<i class="fas fa-' +
-            (type === "success"
-              ? "check-circle"
-              : type === "danger"
-              ? "exclamation-circle"
-              : "info-circle") +
-            '"></i> ' +
-            message
-        );
-        resultDiv.show();
-      }
-
-      $(document).ready(function () {
-        initCamera();
-        initQRScanner();
-      });
-    </script>
-  </body>
 </html>

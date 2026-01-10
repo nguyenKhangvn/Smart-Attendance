@@ -118,23 +118,7 @@
     </div>
 
     <th:block layout:fragment="scripts">
-        <script>
-            // Simple search functionality
-            document.getElementById('searchInput').addEventListener('keyup', function () {
-                const searchValue = this.value.toLowerCase();
-                const table = document.getElementById('attendanceTable');
-                const rows = table.querySelectorAll('tbody tr');
-
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchValue) ? '' : 'none';
-                });
-            });
-
-            function exportToExcel() {
-                alert('Chức năng xuất Excel đang được phát triển');
-            }
-        </script>
+        <script th:src="@{/js/student/attendance-history.js}"></script>
     </th:block>
 </body>
 

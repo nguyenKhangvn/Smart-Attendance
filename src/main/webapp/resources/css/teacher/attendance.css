@@ -1,0 +1,79 @@
+/* Teacher Attendance Page Styles */
+.stat-card {
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.new-attendance {
+    animation: highlightRow 2s ease-in-out;
+}
+
+@keyframes highlightRow {
+    0% {
+        background-color: #90ee90;
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.refresh-indicator {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    border-radius: 5px;
+    display: none;
+}
+
+.refresh-indicator.show {
+    display: block;
+    animation: fadeInOut 1s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0%, 100% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+.sound-toggle {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.sound-toggle:hover {
+    transform: scale(1.1);
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}

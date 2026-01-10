@@ -1,0 +1,29 @@
+/* Teacher QR Scanner Styles */
+.qr-container {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+#qrCode {
+    max-width: 400px;
+    margin: 20px auto;
+    border: 5px solid #007bff;
+    border-radius: 10px;
+}
+
+.timer {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.timer.warning {
+    color: #ffc107;
+}
+
+.timer.danger {
+    color: #dc3545;
+}

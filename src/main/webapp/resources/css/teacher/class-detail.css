@@ -1,0 +1,15 @@
+/* Teacher Class Detail Styles */
+.section-title {
+    border-left: 4px solid #007bff;
+    padding-left: 15px;
+    margin: 30px 0 20px 0;
+}
+
+.qr-modal {
+    text-align: center;
+}
+
+.qr-image {
+    max-width: 400px;
+    margin: 20px auto;
+}
