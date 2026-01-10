@@ -21,7 +21,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
-
+application.properties
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -38,4 +38,3 @@ build/
 ### Mac OS ###
 .DS_Store
 
-!**/src/main/resources/application.properties
