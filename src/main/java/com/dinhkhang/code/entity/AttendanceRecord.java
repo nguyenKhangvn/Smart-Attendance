@@ -1,6 +1,8 @@
 package com.dinhkhang.code.entity;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -12,14 +14,14 @@ public class AttendanceRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_latitude", nullable = false)
-    private Double studentLatitude;
+    @Column(name = "student_latitude", nullable = false, precision = 10, scale = 8)
+    private BigDecimal studentLatitude;
 
-    @Column(name = "student_longitude", nullable = false)
-    private Double studentLongitude;
+    @Column(name = "student_longitude", nullable = false, precision = 11, scale = 8)
+    private BigDecimal studentLongitude;
 
-    @Column(name = "distance_meters", nullable = false)
-    private Double distanceMeters; // Khoảng cách tính được
+    @Column(name = "distance_meters", nullable = false, precision = 10, scale = 2)
+    private BigDecimal distanceMeters;
 
     @Column(name = "device_uid", nullable = false, length = 200)
     private String deviceUid; // Device fingerprint
@@ -67,10 +69,21 @@ public class AttendanceRecord {
     public AttendanceRecord() {
     }
 
-    public AttendanceRecord(Long id, Double studentLatitude, Double studentLongitude, Double distanceMeters,
-            String deviceUid, String faceDataUrl, AttendanceStatus status, String failReason,
-            LocalDateTime checkedInAt, Boolean isManual, Long modifiedBy, String modificationNote,
-            User student, ClassSession classSession) {
+    public AttendanceRecord(
+            Long id,
+            BigDecimal studentLatitude,
+            BigDecimal studentLongitude,
+            BigDecimal distanceMeters,
+            String deviceUid,
+            String faceDataUrl,
+            AttendanceStatus status,
+            String failReason,
+            LocalDateTime checkedInAt,
+            Boolean isManual,
+            Long modifiedBy,
+            String modificationNote,
+            User student,
+            ClassSession classSession) {
         this.id = id;
         this.studentLatitude = studentLatitude;
         this.studentLongitude = studentLongitude;
@@ -96,27 +109,27 @@ public class AttendanceRecord {
         this.id = id;
     }
 
-    public Double getStudentLatitude() {
+    public BigDecimal getStudentLatitude() {
         return studentLatitude;
     }
 
-    public void setStudentLatitude(Double studentLatitude) {
+    public void setStudentLatitude(BigDecimal studentLatitude) {
         this.studentLatitude = studentLatitude;
     }
 
-    public Double getStudentLongitude() {
+    public BigDecimal getStudentLongitude() {
         return studentLongitude;
     }
 
-    public void setStudentLongitude(Double studentLongitude) {
+    public void setStudentLongitude(BigDecimal studentLongitude) {
         this.studentLongitude = studentLongitude;
     }
 
-    public Double getDistanceMeters() {
+    public BigDecimal getDistanceMeters() {
         return distanceMeters;
     }
 
-    public void setDistanceMeters(Double distanceMeters) {
+    public void setDistanceMeters(BigDecimal distanceMeters) {
         this.distanceMeters = distanceMeters;
     }
 

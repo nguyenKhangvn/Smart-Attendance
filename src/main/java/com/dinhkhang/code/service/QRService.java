@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -29,7 +30,7 @@ public class QRService implements IQRService {
     @Autowired
     private ClassSessionRepository classSessionRepository;
 
-    public QRSessionDTO generateQRSession(Long sessionId, Double teacherLat, Double teacherLong,
+    public QRSessionDTO generateQRSession(Long sessionId, BigDecimal teacherLat, BigDecimal teacherLong,
             Integer expirationMinutes, Integer maxDistanceMeters) {
         ClassSession classSession = classSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Class session not found"));
@@ -50,8 +51,8 @@ public class QRService implements IQRService {
 
         // ✅ QR CHỈ CHỨA: sessionId + token (KHÔNG chứa thông tin sinh viên)
         String qrContent = String.format("{\"sessionId\":%d,\"token\":\"%s\"}",
-            qrSession.getClassSession().getId(),
-            tokenSecret);
+                qrSession.getClassSession().getId(),
+                tokenSecret);
 
         String qrCodeBase64 = generateQRCodeImage(qrContent);
 

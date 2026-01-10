@@ -1,21 +1,22 @@
 package com.dinhkhang.code.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class AttendanceRecordDTO {
     private Long id;
-    
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime checkedInAt;
-    
+
     private String status;
-    private Double distanceMeters;
+    private BigDecimal distanceMeters;
     private String failReason;
-    private Double studentLatitude;
-    private Double studentLongitude;
+    private BigDecimal studentLatitude;
+    private BigDecimal studentLongitude;
     private String deviceUid;
-    
+
     // Nested DTOs
     private StudentDTO student;
 
@@ -24,9 +25,9 @@ public class AttendanceRecordDTO {
     }
 
     public AttendanceRecordDTO(Long id, LocalDateTime checkedInAt, String status,
-                              Double distanceMeters, String failReason,
-                              Double studentLatitude, Double studentLongitude,
-                              String deviceUid, StudentDTO student) {
+            BigDecimal distanceMeters, String failReason,
+            BigDecimal studentLatitude, BigDecimal studentLongitude,
+            String deviceUid, StudentDTO student) {
         this.id = id;
         this.checkedInAt = checkedInAt;
         this.status = status;
@@ -63,11 +64,11 @@ public class AttendanceRecordDTO {
         this.status = status;
     }
 
-    public Double getDistanceMeters() {
+    public BigDecimal getDistanceMeters() {
         return distanceMeters;
     }
 
-    public void setDistanceMeters(Double distanceMeters) {
+    public void setDistanceMeters(BigDecimal distanceMeters) {
         this.distanceMeters = distanceMeters;
     }
 
@@ -79,19 +80,19 @@ public class AttendanceRecordDTO {
         this.failReason = failReason;
     }
 
-    public Double getStudentLatitude() {
+    public BigDecimal getStudentLatitude() {
         return studentLatitude;
     }
 
-    public void setStudentLatitude(Double studentLatitude) {
+    public void setStudentLatitude(BigDecimal studentLatitude) {
         this.studentLatitude = studentLatitude;
     }
 
-    public Double getStudentLongitude() {
+    public BigDecimal getStudentLongitude() {
         return studentLongitude;
     }
 
-    public void setStudentLongitude(Double studentLongitude) {
+    public void setStudentLongitude(BigDecimal studentLongitude) {
         this.studentLongitude = studentLongitude;
     }
 

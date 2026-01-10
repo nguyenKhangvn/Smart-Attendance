@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/qr")
 public class QRApiController {
@@ -16,8 +18,8 @@ public class QRApiController {
     @PostMapping("/generate")
     public ResponseEntity<QRSessionDTO> generateQR(
             @RequestParam Long sessionId,
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
+            @RequestParam BigDecimal latitude,
+            @RequestParam BigDecimal longitude,
             @RequestParam(required = false, defaultValue = "5") Integer expirationMinutes,
             @RequestParam(required = false, defaultValue = "50") Integer maxDistanceMeters) {
 

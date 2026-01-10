@@ -2,20 +2,21 @@ package com.dinhkhang.code.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 public class CheckInRequest {
 
     @NotNull(message = "Session ID is required")
-    private Long sessionId;  // Changed from qrId to sessionId
+    private Long sessionId; // Changed from qrId to sessionId
 
     @NotBlank(message = "Token secret is required")
     private String tokenSecret;
 
     @NotNull(message = "Student latitude is required")
-    private Double studentLat;
+    private BigDecimal studentLat;
 
     @NotNull(message = "Student longitude is required")
-    private Double studentLong;
+    private BigDecimal studentLong;
 
     @NotBlank(message = "Device UID is required")
     private String deviceUid;
@@ -26,7 +27,7 @@ public class CheckInRequest {
     public CheckInRequest() {
     }
 
-    public CheckInRequest(Long sessionId, String tokenSecret, Double studentLat, Double studentLong,
+    public CheckInRequest(Long sessionId, String tokenSecret, BigDecimal studentLat, BigDecimal studentLong,
             String deviceUid, String imageData) {
         this.sessionId = sessionId;
         this.tokenSecret = tokenSecret;
@@ -53,19 +54,19 @@ public class CheckInRequest {
         this.tokenSecret = tokenSecret;
     }
 
-    public Double getStudentLat() {
+    public BigDecimal getStudentLat() {
         return studentLat;
     }
 
-    public void setStudentLat(Double studentLat) {
+    public void setStudentLat(BigDecimal studentLat) {
         this.studentLat = studentLat;
     }
 
-    public Double getStudentLong() {
+    public BigDecimal getStudentLong() {
         return studentLong;
     }
 
-    public void setStudentLong(Double studentLong) {
+    public void setStudentLong(BigDecimal studentLong) {
         this.studentLong = studentLong;
     }
 

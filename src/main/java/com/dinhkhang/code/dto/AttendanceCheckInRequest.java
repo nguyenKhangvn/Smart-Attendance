@@ -1,5 +1,7 @@
 package com.dinhkhang.code.dto;
 
+import java.math.BigDecimal;
+
 /**
  * DTO cho request điểm danh từ sinh viên
  * QR Code CHỈ CHỨA: sessionId + token
@@ -12,11 +14,11 @@ public class AttendanceCheckInRequest {
     private String token;
 
     // Từ sinh viên (tự động gửi)
-    private String email;  // Email sinh viên đăng nhập
-    private Double latitude;  // GPS hiện tại
-    private Double longitude;
-    private String deviceId;  // Device fingerprint
-    private String selfieBase64;  // Ảnh selfie (optional)
+    private String email; // Email sinh viên đăng nhập
+    private BigDecimal latitude; // GPS hiện tại
+    private BigDecimal longitude;
+    private String deviceId; // Device fingerprint
+    private String selfieBase64; // Ảnh selfie (optional)
 
     public AttendanceCheckInRequest() {
     }
@@ -46,19 +48,19 @@ public class AttendanceCheckInRequest {
         this.email = email;
     }
 
-    public Double getLatitude() {
+    public BigDecimal getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Double latitude) {
+    public void setLatitude(BigDecimal latitude) {
         this.latitude = latitude;
     }
 
-    public Double getLongitude() {
+    public BigDecimal getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Double longitude) {
+    public void setLongitude(BigDecimal longitude) {
         this.longitude = longitude;
     }
 
@@ -78,4 +80,3 @@ public class AttendanceCheckInRequest {
         this.selfieBase64 = selfieBase64;
     }
 }
-

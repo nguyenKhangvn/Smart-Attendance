@@ -1,6 +1,7 @@
 package com.dinhkhang.code.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,11 +15,11 @@ public class QRSession {
     @Column(name = "token_secret", unique = true, nullable = false, length = 100)
     private String tokenSecret; // Mã bí mật để xác thực
 
-    @Column(name = "teacher_latitude", nullable = false)
-    private Double teacherLatitude;
+    @Column(name = "teacher_latitude", nullable = false, precision = 10, scale = 8)
+    private BigDecimal teacherLatitude;
 
-    @Column(name = "teacher_longitude", nullable = false)
-    private Double teacherLongitude;
+    @Column(name = "teacher_longitude", nullable = false, precision = 11, scale = 8)
+    private BigDecimal teacherLongitude;
 
     @Column(name = "max_distance_meters", nullable = false)
     private Integer maxDistanceMeters = 50; // Khoảng cách tối đa cho phép (mặc định 50m)
@@ -46,7 +47,7 @@ public class QRSession {
     public QRSession() {
     }
 
-    public QRSession(Long id, String tokenSecret, Double teacherLatitude, Double teacherLongitude,
+    public QRSession(Long id, String tokenSecret, BigDecimal teacherLatitude, BigDecimal teacherLongitude,
             Integer maxDistanceMeters, LocalDateTime createdAt, LocalDateTime expiredAt,
             Boolean isActive, ClassSession classSession) {
         this.id = id;
@@ -77,19 +78,19 @@ public class QRSession {
         this.tokenSecret = tokenSecret;
     }
 
-    public Double getTeacherLatitude() {
+    public BigDecimal getTeacherLatitude() {
         return teacherLatitude;
     }
 
-    public void setTeacherLatitude(Double teacherLatitude) {
+    public void setTeacherLatitude(BigDecimal teacherLatitude) {
         this.teacherLatitude = teacherLatitude;
     }
 
-    public Double getTeacherLongitude() {
+    public BigDecimal getTeacherLongitude() {
         return teacherLongitude;
     }
 
-    public void setTeacherLongitude(Double teacherLongitude) {
+    public void setTeacherLongitude(BigDecimal teacherLongitude) {
         this.teacherLongitude = teacherLongitude;
     }
 
