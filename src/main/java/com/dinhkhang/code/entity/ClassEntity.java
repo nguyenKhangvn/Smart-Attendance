@@ -25,8 +25,11 @@ public class ClassEntity {
     @Column(nullable = false)
     private String semester; // Ví dụ: "HK1 2024-2025"
 
+    @Column(name = "room_number", length = 50)
+    private String roomNumber; // Phòng học
+
     @Column(name = "schedule_info", length = 500)
-    private String scheduleInfo; // Ví dụ: "Thứ 2, 7-9 tiết, Phòng A101"
+    private String scheduleInfo; // Ví dụ: "Thứ 2, 7-9 tiết"
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -65,13 +68,14 @@ public class ClassEntity {
     }
 
     public ClassEntity(Long id, String classCode, String subjectName, String description, String semester,
-            String scheduleInfo, LocalDateTime createdAt, LocalDateTime updatedAt, Boolean isActive,
+            String roomNumber, String scheduleInfo, LocalDateTime createdAt, LocalDateTime updatedAt, Boolean isActive,
             User teacher, Set<User> students, Set<ClassSession> sessions) {
         this.id = id;
         this.classCode = classCode;
         this.subjectName = subjectName;
         this.description = description;
         this.semester = semester;
+        this.roomNumber = roomNumber;
         this.scheduleInfo = scheduleInfo;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -82,6 +86,14 @@ public class ClassEntity {
     }
 
     // Getters and Setters
+    public String getRoomNumber() {
+        return roomNumber;
+    }
+
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
+    }
+
     public Long getId() {
         return id;
     }

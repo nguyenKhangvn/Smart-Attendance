@@ -42,6 +42,14 @@ public class User {
     @Column(name = "date_of_birth")
     private java.time.LocalDate dateOfBirth;
 
+    // THÊM MỚI: Avatar URL
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
+    private String avatarUrl;
+
+    // THÊM MỚI: Soft delete
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -80,7 +88,8 @@ public class User {
     }
 
     public User(Long id, String username, String password, String fullName, String email,
-            String phoneNumber, Role role, String studentCode, LocalDate dateOfBirth, LocalDateTime createdAt,
+            String phoneNumber, Role role, String studentCode, LocalDate dateOfBirth, String avatarUrl,
+            Boolean isDeleted, LocalDateTime createdAt,
             LocalDateTime updatedAt, Boolean isActive, Set<ClassEntity> enrolledClasses,
             Set<ClassEntity> teachingClasses, Set<AttendanceRecord> attendanceRecords) {
         this.id = id;
@@ -92,6 +101,8 @@ public class User {
         this.role = role;
         this.studentCode = studentCode;
         this.dateOfBirth = dateOfBirth;
+        this.avatarUrl = avatarUrl;
+        this.isDeleted = isDeleted != null ? isDeleted : false;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.isActive = isActive;
@@ -101,6 +112,22 @@ public class User {
     }
 
     // Getters and Setters
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
+
     public Long getId() {
         return id;
     }
