@@ -28,7 +28,7 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 60000) // Every 60 seconds
     @Transactional
     public void deactivateExpiredQRSessions() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();
 
         List<QRSession> allActive = qrSessionRepository.findAll().stream()
                 .filter(qr -> qr.getIsActive() && qr.getExpiredAt().isBefore(now))

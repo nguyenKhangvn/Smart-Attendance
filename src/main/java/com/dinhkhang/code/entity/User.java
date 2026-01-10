@@ -46,6 +46,10 @@ public class User {
     @Column(name = "avatar_url", columnDefinition = "TEXT")
     private String avatarUrl;
 
+    // THÊM MỚI: Face Profile URL cho nhận diện khuôn mặt
+    @Column(name = "face_profile_url", columnDefinition = "TEXT")
+    private String faceProfileUrl;
+
     // THÊM MỚI: Soft delete
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
@@ -118,6 +122,14 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
+    }
+
+    public String getFaceProfileUrl() {
+        return faceProfileUrl;
+    }
+
+    public void setFaceProfileUrl(String faceProfileUrl) {
+        this.faceProfileUrl = faceProfileUrl;
     }
 
     public Boolean getIsDeleted() {

@@ -1,6 +1,8 @@
 package com.dinhkhang.code.repository;
 
 import com.dinhkhang.code.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,7 +26,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsByStudentCode(String studentCode);
 
+    boolean existsByRole(User.Role role);
+
     List<User> findByRole(User.Role role);
+
+    Page<User> findByRole(User.Role role, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.role = :role AND u.isActive = true")
     List<User> findActiveUsersByRole(@Param("role") User.Role role);

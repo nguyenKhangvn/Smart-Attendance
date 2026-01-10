@@ -205,6 +205,7 @@
                 <th>Thời gian</th>
                 <th>Khoảng cách (m)</th>
                 <th>Ghi chú</th>
+                <th>Ảnh</th>
               </tr>
             </thead>
             <tbody>
@@ -275,6 +276,18 @@
                       th:text="${record.modificationNote}" class="text-info small fst-italic"></span>
                   </th:block>
                 </td>
+                <td>
+                  <th:block th:with="record=${attendanceMap.get(student.id)}">
+                    <img th:if="${record != null && record.faceDataUrl != null && !record.faceDataUrl.isEmpty()}"
+                         th:src="${record.faceDataUrl}"
+                         alt="Ảnh điểm danh"
+                         class="attendance-image"
+                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; cursor: pointer;"
+                         onclick="openImageModal(this.src)">
+                    <span th:if="${record == null || record.faceDataUrl == null || record.faceDataUrl.isEmpty()}"
+                          class="text-muted">Không có</span>
+                  </th:block>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -288,8 +301,29 @@
     th:attr="data-session-id=${attendanceSession.id}, data-initial-records=${attendanceRecordsJson}">
   </div>
 
+  <!-- Image Modal -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageModalLabel">Ảnh điểm danh</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center">
+          <img id="modalImage" src="" alt="Ảnh điểm danh" class="img-fluid" style="max-height: 70vh;">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/js/teacher/attendance.js}"></script>
+  <script>
+    function openImageModal(src) {
+      document.getElementById('modalImage').src = src;
+      new bootstrap.Modal(document.getElementById('imageModal')).show();
+    }
+  </script>
 </body>
 
 </html>

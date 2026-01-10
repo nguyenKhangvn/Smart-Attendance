@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.http.ResponseEntity;
+
 import java.util.List;
 
 @Controller
@@ -35,7 +37,7 @@ public class TeacherController {
 
     @Autowired
     private ExcelImportService excelImportService;
-    
+
     @Autowired
     private IAttendanceService attendanceService;
 
@@ -69,21 +71,22 @@ public class TeacherController {
     // Route này đã được thay thế bằng dashboard với card layout
     // @GetMapping("/classes")
     // public String listClasses(Model model, Authentication authentication) {
-    //     User teacher = userService.findByUsername(authentication.getName())
-    //             .orElseThrow(() -> new RuntimeException("Teacher not found"));
+    // User teacher = userService.findByUsername(authentication.getName())
+    // .orElseThrow(() -> new RuntimeException("Teacher not found"));
     //
-    //     List<ClassEntity> classes = classService.getClassesByTeacher(teacher.getId());
+    // List<ClassEntity> classes =
+    // classService.getClassesByTeacher(teacher.getId());
     //
-    //     model.addAttribute("classes", classes);
+    // model.addAttribute("classes", classes);
     //
-    //     return "teacher/classes";
+    // return "teacher/classes";
     // }
 
     @GetMapping("/classes/create")
     public String showCreateClassForm(Model model) {
         // Tạo một object rỗng để bind vào form
         model.addAttribute("classEntity", new ClassEntity());
-        
+
         return "teacher/class-form";
     }
 
@@ -100,12 +103,12 @@ public class TeacherController {
             classService.createClass(classEntity, teacher.getId());
 
             redirectAttributes.addFlashAttribute("success", "Tạo lớp học thành công");
-            return "redirect:/teacher/classes";
+            return "redirect:/teacher/dashboard";
 
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             redirectAttributes.addFlashAttribute("classEntity", classEntity);
-            return "redirect:/teacher/classes/create";
+            return "redirect:/teacher/dashboard";
         }
     }
 
@@ -121,8 +124,6 @@ public class TeacherController {
         return "teacher/class-detail";
     }
 
-
-
     @GetMapping("/classes/{id}/edit")
     public String editClassForm(@PathVariable Long id, Model model) {
         ClassEntity classEntity = classService.findById(id)
@@ -135,7 +136,7 @@ public class TeacherController {
 
     @PostMapping("/classes/{id}/edit")
     public String editClass(@PathVariable Long id, @ModelAttribute ClassEntity classEntity,
-                           Authentication authentication, RedirectAttributes redirectAttributes) {
+            Authentication authentication, RedirectAttributes redirectAttributes) {
         try {
             User teacher = userService.findByUsername(authentication.getName())
                     .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -203,9 +204,9 @@ public class TeacherController {
     public String viewAttendance(@PathVariable Long id, Model model, Authentication authentication) {
         User teacher = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        
+
         ClassSession session = classSessionService.findByIdWithClassEntity(id);
-        
+
         // Verify teacher owns this class
         if (!session.getClassEntity().getTeacher().getId().equals(teacher.getId())) {
             throw new RuntimeException("Unauthorized access to this session");
@@ -213,20 +214,19 @@ public class TeacherController {
 
         // Get all attendance records for this session (Entity thay vì DTO)
         List<AttendanceRecord> attendanceRecords = attendanceService.getAttendanceBySession(id);
-        
+
         // Create a map for quick lookup
         java.util.Map<Long, AttendanceRecord> attendanceMap = attendanceRecords.stream()
                 .collect(java.util.stream.Collectors.toMap(
-                    record -> record.getStudent().getId(),
-                    record -> record,
-                    (existing, replacement) -> existing
-                ));
+                        record -> record.getStudent().getId(),
+                        record -> record,
+                        (existing, replacement) -> existing));
 
         model.addAttribute("attendanceSession", session);
         model.addAttribute("classEntity", session.getClassEntity());
         model.addAttribute("attendanceRecords", attendanceRecords);
         model.addAttribute("attendanceMap", attendanceMap);
-        
+
         // Calculate statistics
         long totalStudents = session.getClassEntity().getStudents().size();
         long presentCount = attendanceRecords.stream()
@@ -234,13 +234,27 @@ public class TeacherController {
                 .count();
         long absentCount = totalStudents - attendanceRecords.size();
         double attendanceRate = totalStudents > 0 ? (presentCount * 100.0 / totalStudents) : 0;
-        
+
         model.addAttribute("totalStudents", totalStudents);
         model.addAttribute("presentCount", presentCount);
         model.addAttribute("absentCount", absentCount);
         model.addAttribute("attendanceRate", attendanceRate);
 
         return "teacher/attendance";
+    }
+
+    // ===== THÊM ENDPOINT: BẮT ĐẦU SESSION MANUAL =====
+    @PostMapping("/sessions/{id}/start")
+    public String startSession(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            ClassSession session = classSessionService.startSession(id);
+            redirectAttributes.addFlashAttribute("success",
+                "Đã bắt đầu buổi học: " + session.getSessionName());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                "Không thể bắt đầu buổi học: " + e.getMessage());
+        }
+        return "redirect:/teacher/sessions/" + id + "/qr";
     }
 
     @GetMapping("/sessions/{id}/qr")
@@ -332,5 +346,78 @@ public class TeacherController {
         }
 
         return "redirect:/teacher/classes/" + classId;
+    }
+
+    // ===== CẢI TIẾN: API DUYỆT PENDING REVIEW CHO GIÁO VIÊN =====
+    /**
+     * Duyệt điểm danh với trạng thái PENDING_REVIEW hoặc GPS_POOR_SIGNAL
+     */
+    @PostMapping("/approve-attendance/{recordId}")
+    @ResponseBody
+    public ResponseEntity<?> approveAttendance(
+            @PathVariable Long recordId,
+            Authentication authentication) {
+        try {
+            AttendanceRecord record = attendanceService.getAttendanceRecordById(recordId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi điểm danh"));
+
+            // Kiểm tra giáo viên có quyền duyệt không (phải là giáo viên của lớp)
+            User teacher = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo viên"));
+
+            if (!record.getClassSession().getClassEntity().getTeacher().getId().equals(teacher.getId())) {
+                return ResponseEntity.status(403).body("Bạn không có quyền duyệt điểm danh này");
+            }
+
+            // Chỉ duyệt các trạng thái PENDING_REVIEW hoặc GPS_POOR_SIGNAL
+            if (record.getStatus() != AttendanceRecord.AttendanceStatus.PENDING_REVIEW &&
+                    record.getStatus() != AttendanceRecord.AttendanceStatus.GPS_POOR_SIGNAL) {
+                return ResponseEntity.badRequest().body("Chỉ có thể duyệt các bản ghi ở trạng thái chờ");
+            }
+
+            // Chuyển sang SUCCESS
+            record.setStatus(AttendanceRecord.AttendanceStatus.SUCCESS);
+            record.setModifiedBy(teacher.getId());
+            record.setModificationNote("Giáo viên xác nhận thủ công (GPS không ổn định)");
+            attendanceService.updateAttendanceRecord(record);
+
+            return ResponseEntity.ok("Đã duyệt điểm danh thành công");
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Từ chối điểm danh PENDING
+     */
+    @PostMapping("/reject-attendance/{recordId}")
+    @ResponseBody
+    public ResponseEntity<?> rejectAttendance(
+            @PathVariable Long recordId,
+            @RequestParam(required = false) String reason,
+            Authentication authentication) {
+        try {
+            AttendanceRecord record = attendanceService.getAttendanceRecordById(recordId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bản ghi điểm danh"));
+
+            User teacher = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo viên"));
+
+            if (!record.getClassSession().getClassEntity().getTeacher().getId().equals(teacher.getId())) {
+                return ResponseEntity.status(403).body("Bạn không có quyền từ chối điểm danh này");
+            }
+
+            // Chuyển sang ABSENT
+            record.setStatus(AttendanceRecord.AttendanceStatus.ABSENT);
+            record.setModifiedBy(teacher.getId());
+            record.setModificationNote("Giáo viên từ chối: " + (reason != null ? reason : "Không rõ lý do"));
+            attendanceService.updateAttendanceRecord(record);
+
+            return ResponseEntity.ok("Đã từ chối điểm danh");
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        }
     }
 }

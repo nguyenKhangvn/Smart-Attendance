@@ -17,8 +17,11 @@ public class AttendanceCheckInRequest {
     private String email; // Email sinh viên đăng nhập
     private BigDecimal latitude; // GPS hiện tại
     private BigDecimal longitude;
+    private Double gpsAccuracy; // Độ chính xác GPS (meters) - Để phát hiện indoor GPS
+    private String clientIp; // Public IP của client (lấy từ frontend hoặc header)
     private String deviceId; // Device fingerprint
     private String selfieBase64; // Ảnh selfie (optional)
+    private Long timestamp; // Thời điểm quét QR thực tế (milliseconds) - cho Store-and-Forward
 
     public AttendanceCheckInRequest() {
     }
@@ -64,6 +67,22 @@ public class AttendanceCheckInRequest {
         this.longitude = longitude;
     }
 
+    public Double getGpsAccuracy() {
+        return gpsAccuracy;
+    }
+
+    public void setGpsAccuracy(Double gpsAccuracy) {
+        this.gpsAccuracy = gpsAccuracy;
+    }
+
+    public String getClientIp() {
+        return clientIp;
+    }
+
+    public void setClientIp(String clientIp) {
+        this.clientIp = clientIp;
+    }
+
     public String getDeviceId() {
         return deviceId;
     }
@@ -78,5 +97,13 @@ public class AttendanceCheckInRequest {
 
     public void setSelfieBase64(String selfieBase64) {
         this.selfieBase64 = selfieBase64;
+    }
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
     }
 }

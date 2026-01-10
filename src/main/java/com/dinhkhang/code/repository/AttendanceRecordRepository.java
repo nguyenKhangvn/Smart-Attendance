@@ -3,6 +3,9 @@ package com.dinhkhang.code.repository;
 import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassSession;
 import com.dinhkhang.code.entity.User;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,6 +36,14 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
                         @Param("student") User student,
                         @Param("classId") Long classId);
 
+        @Query("SELECT a FROM AttendanceRecord a WHERE a.student = :student " +
+                        "AND (:classId IS NULL OR a.classSession.classEntity.id = :classId) " +
+                        "ORDER BY a.checkedInAt DESC")
+        Page<AttendanceRecord> findByStudentAndClassId(
+                        @Param("student") User student,
+                        @Param("classId") Long classId,
+                        Pageable pageable);
+
         @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.classSession = :classSession " +
                         "AND a.status = com.dinhkhang.code.entity.AttendanceRecord$AttendanceStatus.SUCCESS")
         Long countSuccessfulAttendance(@Param("classSession") ClassSession classSession);
@@ -50,10 +61,10 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
          * Load all necessary relationships in one query
          */
         @Query("SELECT a FROM AttendanceRecord a " +
-               "LEFT JOIN FETCH a.student s " +
-               "LEFT JOIN FETCH a.classSession cs " +
-               "LEFT JOIN FETCH cs.classEntity ce " +
-               "WHERE cs.id = :sessionId " +
-               "ORDER BY s.studentCode ASC")
+                        "LEFT JOIN FETCH a.student s " +
+                        "LEFT JOIN FETCH a.classSession cs " +
+                        "LEFT JOIN FETCH cs.classEntity ce " +
+                        "WHERE cs.id = :sessionId " +
+                        "ORDER BY s.studentCode ASC")
         List<AttendanceRecord> findByClassSessionIdWithDetails(@Param("sessionId") Long sessionId);
 }

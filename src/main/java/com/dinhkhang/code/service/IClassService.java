@@ -1,6 +1,8 @@
 package com.dinhkhang.code.service;
 
 import com.dinhkhang.code.entity.ClassEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,5 +30,13 @@ public interface IClassService {
 
     List<ClassEntity> getAllClasses();
 
+    Page<ClassEntity> getAllClasses(Pageable pageable);
+
     ClassEntity getClassDetail(Long id);
+
+    void activateClass(Long id);
+
+    void deactivateClass(Long id);
+
+    Optional<ClassEntity> findByIdWithTeacher(Long id);
 }

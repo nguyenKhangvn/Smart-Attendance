@@ -11,11 +11,15 @@ import com.dinhkhang.code.mapper.AttendanceMapper;
 import com.dinhkhang.code.repository.AttendanceRecordRepository;
 import com.dinhkhang.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -32,6 +36,9 @@ public class AttendanceService implements IAttendanceService {
 
         @Autowired
         private AttendanceMapper attendanceMapper;
+
+        @Autowired
+        private CloudinaryService cloudinaryService;
 
         public AttendanceResponse checkIn(CheckInRequest request, String username) {
                 try {
@@ -77,7 +84,21 @@ public class AttendanceService implements IAttendanceService {
                                                 AttendanceRecord.AttendanceStatus.FAILED_DISTANCE.name());
                         }
 
-                        // 7. Save successful attendance record
+                        // 7. Upload ảnh lên Cloudinary nếu có
+                        String imageUrl = null;
+                        if (request.getImageData() != null && !request.getImageData().trim().isEmpty()) {
+                                try {
+                                        imageUrl = cloudinaryService.uploadFaceImage(
+                                                        request.getImageData(),
+                                                        student.getId(),
+                                                        classSession.getId());
+                                } catch (Exception e) {
+                                        // Nếu upload thất bại, vẫn cho điểm danh nhưng không lưu URL
+                                        System.err.println("Failed to upload image: " + e.getMessage());
+                                }
+                        }
+
+                        // 8. Save successful attendance record
                         AttendanceRecord record = new AttendanceRecord();
                         record.setStudent(student);
                         record.setClassSession(classSession);
@@ -85,13 +106,13 @@ public class AttendanceService implements IAttendanceService {
                         record.setStudentLongitude(request.getStudentLong());
                         record.setDistanceMeters(BigDecimal.valueOf(distance));
                         record.setDeviceUid(request.getDeviceUid());
-                        record.setFaceDataUrl(request.getImageData());
+                        record.setFaceDataUrl(imageUrl); // Lưu URL Cloudinary thay vì Base64
                         record.setStatus(AttendanceRecord.AttendanceStatus.SUCCESS);
+                        record.setCheckedInAt(java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime());
 
                         record = attendanceRecordRepository.save(record);
 
                         return AttendanceResponse.success("Điểm danh thành công!", distance, record.getId());
-
                 } catch (RuntimeException e) {
                         return AttendanceResponse.failed(e.getMessage(),
                                         AttendanceRecord.AttendanceStatus.FAILED_INVALID_QR.name());
@@ -101,6 +122,20 @@ public class AttendanceService implements IAttendanceService {
         private AttendanceRecord saveFailedRecord(User student, ClassSession classSession,
                         CheckInRequest request, double distance,
                         AttendanceRecord.AttendanceStatus status, String reason) {
+                // Upload ảnh lên Cloudinary nếu có (cho cả trường hợp thất bại)
+                String imageUrl = null;
+                if (request.getImageData() != null && !request.getImageData().trim().isEmpty()) {
+                        try {
+                                imageUrl = cloudinaryService.uploadFaceImage(
+                                                request.getImageData(),
+                                                student.getId(),
+                                                classSession.getId());
+                        } catch (Exception e) {
+                                // Nếu upload thất bại, vẫn lưu record nhưng không có URL
+                                System.err.println("Failed to upload failed-attempt image: " + e.getMessage());
+                        }
+                }
+
                 AttendanceRecord record = new AttendanceRecord();
                 record.setStudent(student);
                 record.setClassSession(classSession);
@@ -108,7 +143,7 @@ public class AttendanceService implements IAttendanceService {
                 record.setStudentLongitude(request.getStudentLong());
                 record.setDistanceMeters(BigDecimal.valueOf(distance));
                 record.setDeviceUid(request.getDeviceUid());
-                record.setFaceDataUrl(request.getImageData());
+                record.setFaceDataUrl(imageUrl); // Lưu URL Cloudinary thay vì Base64
                 record.setStatus(status);
                 record.setFailReason(reason);
 
@@ -145,5 +180,23 @@ public class AttendanceService implements IAttendanceService {
                 User student = userRepository.findById(studentId)
                                 .orElseThrow(() -> new RuntimeException("Student not found"));
                 return attendanceRecordRepository.findByStudentAndClassId(student, classId);
+        }
+
+        @Override
+        public Page<AttendanceRecord> getStudentAttendancePage(Long studentId, Long classId, Pageable pageable) {
+                User student = userRepository.findById(studentId)
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
+                return attendanceRecordRepository.findByStudentAndClassId(student, classId, pageable);
+        }
+
+        // ===== CẢI TIẾN: IMPLEMENT METHOD ĐỂ DUYỆT ATTENDANCE =====
+        @Override
+        public Optional<AttendanceRecord> getAttendanceRecordById(Long recordId) {
+                return attendanceRecordRepository.findById(recordId);
+        }
+
+        @Override
+        public void updateAttendanceRecord(AttendanceRecord record) {
+                attendanceRecordRepository.save(record);
         }
 }

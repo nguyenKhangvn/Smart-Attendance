@@ -3,6 +3,8 @@ package com.dinhkhang.code.service;
 import com.dinhkhang.code.entity.User;
 import com.dinhkhang.code.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -82,6 +84,10 @@ public class UserService implements IUserService {
         return userRepository.findByRole(role);
     }
 
+    public Page<User> getUsersByRole(User.Role role, Pageable pageable) {
+        return userRepository.findByRole(role, pageable);
+    }
+
     public List<User> searchStudents(String keyword) {
         return userRepository.searchUsersByKeywordAndRole(keyword, User.Role.STUDENT);
     }
@@ -94,6 +100,13 @@ public class UserService implements IUserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setIsActive(false);
+        userRepository.save(user);
+    }
+
+    public void activateUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setIsActive(true);
         userRepository.save(user);
     }
 }

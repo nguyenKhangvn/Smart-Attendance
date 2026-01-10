@@ -17,13 +17,16 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.UUID;
 
 @Service
 @Transactional
 public class QRService implements IQRService {
-
+    // ===== TIMEZONE: LUÔN SỬ DỤNG GIỜ VIỆT NAM (UTC+7) =====
+    private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
     @Autowired
     private QRSessionRepository qrSessionRepository;
 
@@ -35,6 +38,15 @@ public class QRService implements IQRService {
         ClassSession classSession = classSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Class session not found"));
 
+        // ===== TỰ ĐỘNG BẮT ĐẦU SESSION KHI TẠO QR =====
+        // Nếu session chưa bắt đầu, chuyển sang IN_PROGRESS
+        if (!classSession.getStatus().equals(ClassSession.SessionStatus.IN_PROGRESS)) {
+            classSession.setStatus(ClassSession.SessionStatus.IN_PROGRESS);
+            classSession.setUpdatedAt(LocalDateTime.now());
+            classSession = classSessionRepository.save(classSession);
+            System.out.println("✅ Session " + sessionId + " started automatically (status: IN_PROGRESS)");
+        }
+
         // Generate unique token BẢO MẬT - 32 characters
         String tokenSecret = java.util.UUID.randomUUID().toString().replace("-", "");
 
@@ -44,12 +56,12 @@ public class QRService implements IQRService {
         qrSession.setTeacherLatitude(teacherLat);
         qrSession.setTeacherLongitude(teacherLong);
         qrSession.setClassSession(classSession);
-        qrSession.setExpiredAt(LocalDateTime.now().plusMinutes(expirationMinutes != null ? expirationMinutes : 5));
+        qrSession.setExpiredAt(ZonedDateTime.now(VIETNAM_ZONE).plusMinutes(expirationMinutes != null ? expirationMinutes : 5).toLocalDateTime());
         qrSession.setMaxDistanceMeters(maxDistanceMeters != null ? maxDistanceMeters : 50);
 
         qrSession = qrSessionRepository.save(qrSession);
 
-        // ✅ QR CHỈ CHỨA: sessionId + token (KHÔNG chứa thông tin sinh viên)
+        // QR CHỈ CHỨA: sessionId + token (KHÔNG chứa thông tin sinh viên)
         String qrContent = String.format("{\"sessionId\":%d,\"token\":\"%s\"}",
                 qrSession.getClassSession().getId(),
                 tokenSecret);
@@ -57,7 +69,8 @@ public class QRService implements IQRService {
         String qrCodeBase64 = generateQRCodeImage(qrContent);
 
         // Calculate expiration time
-        int expiresInSeconds = (int) Duration.between(LocalDateTime.now(), qrSession.getExpiredAt()).getSeconds();
+        ZonedDateTime nowVN = ZonedDateTime.now(VIETNAM_ZONE);
+        int expiresInSeconds = (int) Duration.between(nowVN, ZonedDateTime.of(qrSession.getExpiredAt(), VIETNAM_ZONE)).getSeconds();
 
         return new QRSessionDTO(
                 qrSession.getId(),
@@ -105,7 +118,7 @@ public class QRService implements IQRService {
      */
     public QRSession validateQRSessionBySessionIdAndToken(Long sessionId, String tokenSecret) {
         QRSession qrSession = qrSessionRepository
-                .findValidQRSessionBySessionIdAndToken(sessionId, tokenSecret, LocalDateTime.now())
+                .findValidQRSessionBySessionIdAndToken(sessionId, tokenSecret, ZonedDateTime.now(VIETNAM_ZONE).toLocalDateTime())
                 .orElseThrow(() -> new RuntimeException("QR code không hợp lệ hoặc đã hết hạn"));
 
         return qrSession;

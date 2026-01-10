@@ -1,59 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý Học Sinh</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link th:href="@{/css/admin/students.css}" rel="stylesheet">
+<head th:replace="~{admin/admin-common :: head('Quản lý Học Sinh', null)}">
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="row">
-
             <!-- SIDEBAR -->
-            <nav class="col-md-2 sidebar text-white"
-                style="min-height:100vh;background:linear-gradient(135deg,#667eea,#764ba2)">
-                <div class="p-3 text-center">
-                    <i class="fas fa-user-shield fa-3x"></i>
-                    <h5 class="mt-2">Admin Panel</h5>
-                </div>
-
-                <ul class="nav flex-column px-3">
-                    <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/dashboard}">
-                            <i class="fas fa-home me-2"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/teachers}">
-                            <i class="fas fa-chalkboard-teacher me-2"></i>Giáo viên
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white active" style="background:rgba(255,255,255,0.2)"
-                            th:href="@{/admin/students}">
-                            <i class="fas fa-user-graduate me-2"></i>Học sinh
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-white" th:href="@{/admin/classes}">
-                            <i class="fas fa-school me-2"></i>Lớp học
-                        </a>
-                    </li>
-                    <li class="nav-item mt-5">
-                        <a class="nav-link text-white" th:href="@{/logout}">
-                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+            <div th:replace="admin/admin-common :: sidebar('students')"></div>
 
             <!-- MAIN -->
             <main class="col-md-10 p-4">
-
                 <div class="d-flex justify-content-between mb-3">
                     <h2><i class="fas fa-user-graduate me-2"></i>Quản lý Học Sinh</h2>
                     <a th:href="@{/admin/students/create}" class="btn btn-primary">
@@ -62,63 +20,91 @@
                 </div>
 
                 <!-- ALERT -->
-                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-                <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
 
                 <div class="card">
                     <div class="card-body">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Mã SV</th>
-                                    <th>Username</th>
-                                    <th>Họ tên</th>
-                                    <th>Email</th>
-                                    <th>SĐT</th>
-                                    <th>Trạng thái</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><a href="#" onclick="changeSort('studentCode', '${sortDir}')">Mã SV <i
+                                                    th:class="${sortBy == 'studentCode' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        </th>
+                                        <th><a href="#" onclick="changeSort('username', '${sortDir}')">Username <i
+                                                    th:class="${sortBy == 'username' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        </th>
+                                        <th><a href="#" onclick="changeSort('fullName', '${sortDir}')">Họ tên <i
+                                                    th:class="${sortBy == 'fullName' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        </th>
+                                        <th><a href="#" onclick="changeSort('email', '${sortDir}')">Email <i
+                                                    th:class="${sortBy == 'email' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        </th>
+                                        <th>SĐT</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="student : ${studentPage.content}">
+                                        <td th:text="${student.studentCode}"></td>
+                                        <td><strong th:text="${student.username}"></strong></td>
+                                        <td th:text="${student.fullName}"></td>
+                                        <td th:text="${student.email}"></td>
+                                        <td th:text="${student.phoneNumber}"></td>
+                                        <td>
+                                            <span th:if="${student.isActive}" class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Hoạt động
+                                            </span>
+                                            <span th:unless="${student.isActive}" class="badge bg-secondary">
+                                                <i class="fas fa-ban"></i> Vô hiệu
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <a th:href="@{/admin/students/edit/{id}(id=${student.id})}"
+                                                    class="btn btn-warning btn-sm" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form
+                                                    th:action="@{/admin/students/toggle-status/{id}(id=${student.id})}"
+                                                    method="post" class="d-inline">
+                                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                                    <button type="submit"
+                                                        th:class="${student.isActive ? 'btn btn-secondary btn-sm' : 'btn btn-success btn-sm'}"
+                                                        th:title="${student.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}">
+                                                        <i
+                                                            th:class="${student.isActive ? 'fas fa-ban' : 'fas fa-check'}"></i>
+                                                    </button>
+                                                </form>
+                                                <button class="btn btn-danger btn-sm"
+                                                    th:attr="data-id=${student.id},data-name=${student.fullName}"
+                                                    onclick="confirmDelete(this)" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${studentPage.empty}">
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                            Chưa có học sinh nào
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                            <tbody>
-
-                                <!-- KHÔNG CÓ DATA -->
-                                <tr th:if="${#lists.isEmpty(students)}">
-                                    <td colspan="7" class="text-center text-muted">
-                                        <i class="fas fa-inbox fa-2x d-block mb-2"></i>
-                                        Chưa có học sinh nào
-                                    </td>
-                                </tr>
-
-                                <!-- CÓ DATA -->
-                                <tr th:each="student : ${students}">
-                                    <td th:text="${student.studentCode}"></td>
-                                    <td th:text="${student.username}"></td>
-                                    <td th:text="${student.fullName}"></td>
-                                    <td th:text="${student.email}"></td>
-                                    <td th:text="${student.phoneNumber}"></td>
-
-                                    <td>
-                                        <span th:if="${student.isActive}" class="badge bg-success">Hoạt động</span>
-                                        <span th:unless="${student.isActive}" class="badge bg-secondary">Vô hiệu</span>
-                                    </td>
-
-                                    <td>
-                                        <a th:href="@{/admin/students/edit/{id}(id=${student.id})}"
-                                            class="btn btn-warning btn-sm">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                        <button class="btn btn-danger btn-sm"
-                                            th:attr="data-id=${student.id},data-name=${student.fullName}"
-                                            onclick="confirmDelete(this)">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
+                        <!-- Pagination -->
+                        <div th:if="${!studentPage.empty}"
+                            th:replace="admin/admin-common :: pagination(${studentPage}, '/admin/students')"></div>
                     </div>
                 </div>
             </main>
@@ -130,6 +116,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="deleteForm" method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                     <div class="modal-header">
                         <h5 class="modal-title">Xác nhận xóa</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -146,8 +133,20 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script th:src="@{/js/admin/students.js}"></script>
+    <!-- Scripts -->
+    <div th:replace="~{admin/admin-common :: scripts(null)}"></div>
+
+    <script>
+        function confirmDelete(button) {
+            const studentId = button.getAttribute('data-id');
+            const studentName = button.getAttribute('data-name');
+
+            document.getElementById('studentName').textContent = studentName;
+            document.getElementById('deleteForm').action = '/admin/students/delete/' + studentId;
+
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
 </body>
 
 </html>

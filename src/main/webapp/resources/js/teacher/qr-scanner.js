@@ -5,6 +5,8 @@
 
 let timerInterval;
 let expirationTime;
+let autoRefreshInterval; // ===== CẢI TIẾN: AUTO-REFRESH QR =====
+const QR_REFRESH_INTERVAL = 10; // seconds - Dynamic QR tự động thay đổi mỗi 10 giây
 
 function generateQRCode() {
   if (navigator.geolocation) {
@@ -51,6 +53,31 @@ function generateQRCode() {
   }
 }
 
+// ===== CẢI TIẾN: DYNAMIC QR - TỰ ĐỘNG REFRESH MỖI 10 GIÂY =====
+function startAutoRefresh() {
+  // Xóa interval cũ nếu có
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+
+  // Tạo QR mới mỗi 10 giây
+  autoRefreshInterval = setInterval(function () {
+    console.log("🔄 Auto-refreshing QR code...");
+    generateQRCode();
+  }, QR_REFRESH_INTERVAL * 1000);
+
+  console.log(
+    "✅ Dynamic QR enabled: Refresh every " + QR_REFRESH_INTERVAL + "s"
+  );
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    console.log("⏹️ Dynamic QR stopped");
+  }
+}
+
 function startTimer(seconds) {
   clearInterval(timerInterval);
 
@@ -70,6 +97,7 @@ function startTimer(seconds) {
 
     if (seconds <= 0) {
       clearInterval(timerInterval);
+      stopAutoRefresh(); // Dừng auto-refresh khi hết thời gian
       $("#qrCode").html(
         '<p class="text-danger">Mã QR đã hết hạn. Vui lòng tạo mã mới!</p>'
       );
@@ -82,7 +110,12 @@ function startTimer(seconds) {
 $(document).ready(function () {
   generateQRCode();
 
+  // ===== BẬT DYNAMIC QR AUTO-REFRESH =====
+  startAutoRefresh();
+
   $("#regenerateBtn").click(function () {
     generateQRCode();
+    // Restart auto-refresh
+    startAutoRefresh();
   });
 });

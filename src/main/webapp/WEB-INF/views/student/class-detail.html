@@ -121,9 +121,9 @@
                             <tbody>
                                 <tr th:each="record, iterStat : ${attendanceRecords}">
                                     <td th:text="${iterStat.count}">1</td>
-                                    <td th:text="${#temporals.format(record.checkInTime, 'dd/MM/yyyy')}">01/01/2024</td>
+                                    <td th:text="${#temporals.format(record.checkedInAt, 'dd/MM/yyyy')}">01/01/2024</td>
                                     <td th:text="${record.session.sessionName}">Session Name</td>
-                                    <td th:text="${#temporals.format(record.checkInTime, 'HH:mm:ss')}">10:00:00</td>
+                                    <td th:text="${#temporals.format(record.checkedInAt, 'HH:mm:ss')}">10:00:00</td>
                                     <td>
                                         <span th:if="${record.status == 'PRESENT'}" class="badge bg-success">
                                             <i class="fas fa-check"></i> Có mặt

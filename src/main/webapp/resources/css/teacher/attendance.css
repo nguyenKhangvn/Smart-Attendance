@@ -72,6 +72,16 @@
     transform: scale(1.1);
 }
 
+.attendance-image {
+    transition: transform 0.2s;
+    border: 2px solid #e9ecef;
+}
+
+.attendance-image:hover {
+    transform: scale(1.05);
+    border-color: #007bff;
+}
+
 @media print {
     .no-print {
         display: none !important;

@@ -4,12 +4,15 @@ import com.dinhkhang.code.entity.ClassEntity;
 import com.dinhkhang.code.entity.User;
 import com.dinhkhang.code.service.IClassService;
 import com.dinhkhang.code.service.IUserService;
+import com.dinhkhang.code.service.PaginationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +26,9 @@ public class AdminController {
 
     @Autowired
     private IClassService classService;
+
+    @Autowired
+    private PaginationService paginationService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -46,9 +52,19 @@ public class AdminController {
     // ==================== TEACHERS CRUD ====================
 
     @GetMapping("/teachers")
-    public String listTeachers(Model model) {
-        List<User> teachers = userService.getUsersByRole(User.Role.TEACHER);
-        model.addAttribute("teachers", teachers);
+    @Transactional(readOnly = true)
+    public String listTeachers(Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Page<User> teacherPage = userService.getUsersByRole(User.Role.TEACHER,
+                paginationService.createPageable(page, size, sortBy, sortDir));
+        model.addAttribute("teacherPage", teacherPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         return "admin/teachers";
     }
 
@@ -123,8 +139,7 @@ public class AdminController {
                 userService.deactivateUser(id);
                 redirectAttributes.addFlashAttribute("success", "Đã vô hiệu hóa giáo viên!");
             } else {
-                teacher.setIsActive(true);
-                userService.updateUser(id, teacher);
+                userService.activateUser(id);
                 redirectAttributes.addFlashAttribute("success", "Đã kích hoạt giáo viên!");
             }
         } catch (Exception e) {
@@ -136,9 +151,19 @@ public class AdminController {
     // ==================== STUDENTS CRUD ====================
 
     @GetMapping("/students")
-    public String listStudents(Model model) {
-        List<User> students = userService.getUsersByRole(User.Role.STUDENT);
-        model.addAttribute("students", students);
+    @Transactional(readOnly = true)
+    public String listStudents(Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Page<User> studentPage = userService.getUsersByRole(User.Role.STUDENT,
+                paginationService.createPageable(page, size, sortBy, sortDir));
+        model.addAttribute("studentPage", studentPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         return "admin/students";
     }
 
@@ -213,8 +238,7 @@ public class AdminController {
                 userService.deactivateUser(id);
                 redirectAttributes.addFlashAttribute("success", "Đã vô hiệu hóa học sinh!");
             } else {
-                student.setIsActive(true);
-                userService.updateUser(id, student);
+                userService.activateUser(id);
                 redirectAttributes.addFlashAttribute("success", "Đã kích hoạt học sinh!");
             }
         } catch (Exception e) {
@@ -226,11 +250,19 @@ public class AdminController {
     // ==================== CLASSES CRUD ====================
 
     @GetMapping("/classes")
-    public String listClasses(Model model) {
-        // Get all classes directly from service
-        List<ClassEntity> allClasses = classService.getAllClasses();
-
-        model.addAttribute("classes", allClasses);
+    @Transactional(readOnly = true)
+    public String listClasses(Model model,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        Page<ClassEntity> classPage = classService
+                .getAllClasses(paginationService.createPageable(page, size, sortBy, sortDir));
+        model.addAttribute("classPage", classPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("sortDir", sortDir);
         return "admin/classes";
     }
 
@@ -302,29 +334,67 @@ public class AdminController {
             ClassEntity classEntity = classService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
 
-            classEntity.setIsActive(!classEntity.getIsActive());
-            classService.updateClass(id, classEntity);
-
-            String message = classEntity.getIsActive() ? "Đã kích hoạt lớp học!" : "Đã tạm dừng lớp học!";
-            redirectAttributes.addFlashAttribute("success", message);
+            if (classEntity.getIsActive()) {
+                classService.deactivateClass(id);
+                redirectAttributes.addFlashAttribute("success", "Đã tạm dừng lớp học!");
+            } else {
+                classService.activateClass(id);
+                redirectAttributes.addFlashAttribute("success", "Đã kích hoạt lớp học!");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/classes";
     }
 
-    @GetMapping("/classes/{id}")
+    @GetMapping("/classes/detail/{id}")
     public String viewClassDetail(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
-            ClassEntity classEntity = classService.findById(id)
+            ClassEntity classEntity = classService.findByIdWithTeacher(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+
+            // Get all active students for adding to class
+            List<User> allStudents = userService.getUsersByRole(User.Role.STUDENT)
+                    .stream()
+                    .filter(User::getIsActive)
+                    .toList();
+
+            // Filter out students already in the class
+            List<User> availableStudents = allStudents.stream()
+                    .filter(student -> !classEntity.getStudents().contains(student))
+                    .toList();
 
             model.addAttribute("classEntity", classEntity);
             model.addAttribute("students", classEntity.getStudents());
+            model.addAttribute("availableStudents", availableStudents);
             return "admin/class-detail";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/admin/classes";
         }
+    }
+
+    @PostMapping("/classes/{classId}/add-student")
+    public String addStudentToClass(@PathVariable Long classId, @RequestParam Long studentId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            classService.addStudentToClass(classId, studentId);
+            redirectAttributes.addFlashAttribute("success", "Đã thêm học sinh vào lớp!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/classes/" + classId;
+    }
+
+    @PostMapping("/classes/{classId}/remove-student/{studentId}")
+    public String removeStudentFromClass(@PathVariable Long classId, @PathVariable Long studentId,
+            RedirectAttributes redirectAttributes) {
+        try {
+            classService.removeStudentFromClass(classId, studentId);
+            redirectAttributes.addFlashAttribute("success", "Đã xóa học sinh khỏi lớp!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
+        }
+        return "redirect:/admin/classes/" + classId;
     }
 }

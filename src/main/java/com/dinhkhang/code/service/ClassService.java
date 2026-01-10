@@ -4,12 +4,15 @@ import com.dinhkhang.code.entity.ClassEntity;
 import com.dinhkhang.code.entity.User;
 import com.dinhkhang.code.repository.ClassRepository;
 import com.dinhkhang.code.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -80,6 +83,7 @@ public class ClassService implements IClassService {
         classEntity.getStudents().add(student);
         classRepository.save(classEntity);
     }
+
     @Transactional(readOnly = true)
     public ClassEntity getClassDetail(Long id) {
         ClassEntity classEntity = classRepository.findById(id)
@@ -140,7 +144,34 @@ public class ClassService implements IClassService {
     @Override
     @Transactional(readOnly = true)
     public List<ClassEntity> getAllClasses() {
-        return classRepository.findAll();
+        return classRepository.findAllWithTeacherAndStudents();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<ClassEntity> findByIdWithTeacher(Long id) {
+        return classRepository.findByIdWithTeacher(id);
+    }
+
+    @Override
+    public void activateClass(Long id) {
+        ClassEntity classEntity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+        classEntity.setIsActive(true);
+        classRepository.save(classEntity);
+    }
+
+    @Override
+    public void deactivateClass(Long id) {
+        ClassEntity classEntity = classRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+        classEntity.setIsActive(false);
+        classRepository.save(classEntity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ClassEntity> getAllClasses(Pageable pageable) {
+        return classRepository.findAllWithTeacherAndStudents(pageable);
     }
 }
-

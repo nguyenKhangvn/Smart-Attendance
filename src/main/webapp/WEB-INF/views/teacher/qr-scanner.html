@@ -39,6 +39,15 @@
           </div>
 
           <div class="mt-4">
+            <!-- Nút bắt đầu session nếu chưa bắt đầu -->
+            <form th:if="${classSession.status.name() != 'IN_PROGRESS'}" 
+                  th:action="@{/teacher/sessions/{id}/start(id=${classSession.id})}" 
+                  method="post" style="display: inline;">
+              <button type="submit" class="btn btn-warning btn-lg me-2">
+                <i class="fas fa-play"></i> Bắt đầu buổi học
+              </button>
+            </form>
+            
             <button class="btn btn-primary btn-lg" id="regenerateBtn">
               <i class="fas fa-sync"></i> Tạo mã mới
             </button>

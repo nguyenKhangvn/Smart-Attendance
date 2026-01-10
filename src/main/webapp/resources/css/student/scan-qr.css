@@ -11,4 +11,10 @@
     margin: 20px auto;
     border: 3px solid #007bff;
     border-radius: 10px;
+    display: block; /* ✅ Đảm bảo video hiển thị */
+    background: #000; /* ✅ Background đen khi chưa load */
+}
+
+#canvas {
+    display: none; /* ✅ Ẩn canvas - chỉ dùng để capture */
 }
