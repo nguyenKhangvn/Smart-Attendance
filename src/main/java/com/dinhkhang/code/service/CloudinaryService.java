@@ -1,6 +1,7 @@
 package com.dinhkhang.code.service;
 
 import com.cloudinary.Cloudinary;
+import com.cloudinary.Transformation; // Import quan trọng
 import com.cloudinary.utils.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,13 +25,6 @@ public class CloudinaryService {
 
     /**
      * Upload ảnh từ Base64 string lên Cloudinary
-     * 
-     * @param base64Image Base64 encoded image string (có thể có hoặc không có
-     *                    prefix "data:image/...")
-     * @param studentId   ID của sinh viên (dùng để đặt tên file)
-     * @param sessionId   ID của session (dùng để tổ chức thư mục)
-     * @return URL của ảnh đã upload
-     * @throws IOException nếu upload thất bại
      */
     public String uploadFaceImage(String base64Image, Long studentId, Long sessionId) throws IOException {
         if (base64Image == null || base64Image.trim().isEmpty()) {
@@ -38,33 +32,30 @@ public class CloudinaryService {
         }
 
         try {
-            // Loại bỏ prefix "data:image/png;base64," nếu có
             String imageData = base64Image;
             if (base64Image.contains(",")) {
                 imageData = base64Image.split(",")[1];
             }
 
-            // Decode Base64 to byte array
             byte[] imageBytes = Base64.getDecoder().decode(imageData);
 
-            // Tạo public_id cho ảnh (format:
-            // smart-attendance/faces/session_123/student_456_timestamp)
             String publicId = String.format("%s/session_%d/student_%d_%d",
                     folder, sessionId, studentId, System.currentTimeMillis());
 
-            // Upload lên Cloudinary với optimization
+            // ===== ĐÃ SỬA: Thêm .generate() =====
             Map uploadResult = cloudinary.uploader().upload(imageBytes, ObjectUtils.asMap(
                     "public_id", publicId,
                     "folder", folder,
                     "resource_type", "image",
                     "format", "jpg",
-                    "transformation", new com.cloudinary.Transformation()
+                    "transformation", new Transformation()
                             .width(800)
                             .height(800)
                             .crop("limit")
-                            .quality("auto:good")));
+                            .quality("auto:good")
+                            .generate() // <--- QUAN TRỌNG
+            ));
 
-            // Trả về secure URL
             return (String) uploadResult.get("secure_url");
 
         } catch (Exception e) {
@@ -72,12 +63,6 @@ public class CloudinaryService {
         }
     }
 
-    /**
-     * Xóa ảnh từ Cloudinary
-     * 
-     * @param publicId Public ID của ảnh cần xóa
-     * @return true nếu xóa thành công
-     */
     public boolean deleteImage(String publicId) {
         try {
             Map result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());

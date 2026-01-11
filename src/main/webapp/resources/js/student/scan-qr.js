@@ -1,26 +1,21 @@
-/* Student QR Scanner Script */
+/* Student QR Scanner Script - STRICT GPS VERSION */
 let html5QrCode;
 let videoStream;
 
-// ===== CẢI TIẾN 1: DEVICE FINGERPRINT TƯƠNG TỰ UUID =====
+// ===== HELPER: DEVICE UUID & IMAGE =====
 function getOrCreateDeviceUUID() {
   let deviceUUID = localStorage.getItem("device_uuid");
   if (!deviceUUID) {
-    // Tạo UUID mới dựa trên thông tin thiết bị + random
     deviceUUID =
       "device-" +
       Date.now() +
       "-" +
-      Math.random().toString(36).substring(2, 15) +
-      "-" +
-      navigator.userAgent.substring(0, 20).replace(/\s/g, "");
+      Math.random().toString(36).substring(2, 15);
     localStorage.setItem("device_uuid", deviceUUID);
-    console.log("✅ Created new Device UUID:", deviceUUID);
   }
   return deviceUUID;
 }
 
-// ===== CẢI TIẾN 2: NÉN ẢNH TRƯỚC KHI UPLOAD =====
 function compressImage(base64Image, maxWidth = 640, quality = 0.7) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -28,104 +23,105 @@ function compressImage(base64Image, maxWidth = 640, quality = 0.7) {
       const canvas = document.createElement("canvas");
       let width = img.width;
       let height = img.height;
-
-      // Resize nếu ảnh quá lớn
       if (width > maxWidth) {
         height = (height * maxWidth) / width;
         width = maxWidth;
       }
-
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
-
-      // Nén với quality 0.7 (70%)
-      const compressed = canvas.toDataURL("image/jpeg", quality);
-      console.log(
-        "✅ Image compressed:",
-        (base64Image.length / 1024).toFixed(1) + "KB ->",
-        (compressed.length / 1024).toFixed(1) + "KB"
-      );
-      resolve(compressed);
+      resolve(canvas.toDataURL("image/jpeg", quality));
     };
     img.src = base64Image;
   });
 }
 
-// Initialize camera for selfie
+// ===== INIT CAMERA =====
 async function initCamera() {
   try {
     videoStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "user" },
     });
-    document.getElementById("preview").srcObject = videoStream;
+    const video = document.getElementById("preview");
+    video.srcObject = videoStream;
+    video.setAttribute("playsinline", true);
+    await video.play();
   } catch (error) {
-    console.error("Error accessing camera:", error);
-
-    // ===== CẢI TIẾN 3: XỬ LÝ LỖI CAMERA (iOS Safari) =====
-    let errorMessage = "Không thể truy cập camera. ";
-    if (error.name === "NotAllowedError") {
-      errorMessage += "Vui lòng cho phép truy cập camera trong cài đặt!";
-    } else if (error.name === "NotFoundError") {
-      errorMessage += "Không tìm thấy camera trên thiết bị!";
-    } else if (error.name === "NotSupportedError") {
-      errorMessage +=
-        "Trình duyệt không hỗ trợ camera. Vui lòng sử dụng HTTPS!";
-    } else {
-      errorMessage += error.message;
-    }
-
-    showResult(errorMessage, "danger");
+    console.error("Camera error:", error);
+    throw error;
   }
 }
 
-// Capture selfie
-function captureSelfie() {
+// ===== CAPTURE SELFIE (FIXED FOR SLOW DEVICES) =====
+async function captureSelfie() {
   const video = document.getElementById("preview");
   const canvas = document.getElementById("canvas");
 
-  // ✅ KIỂM TRA VIDEO ĐÃ SẴN SÀNG
-  if (!video.videoWidth || !video.videoHeight) {
-    console.error(
-      "❌ Video not ready:",
-      video.videoWidth,
-      "x",
-      video.videoHeight
-    );
-    throw new Error("Camera chưa sẵn sàng. Vui lòng chờ và thử lại!");
+  // FIX 1: Đảm bảo video đang chạy (quan trọng cho iOS)
+  if (video.paused || video.ended) {
+    try {
+      await video.play();
+    } catch (e) {
+      console.warn(
+        "Auto-play failed, waiting for user interaction/stream load..."
+      );
+    }
   }
 
-  console.log(
-    "📸 Capturing selfie from video:",
-    video.videoWidth,
-    "x",
-    video.videoHeight
-  );
+  // FIX 2: Thay đổi logic chờ
+  // Không chỉ chờ readyState, mà chờ cả kích thước video (width > 0)
+  let waitCount = 0;
+  const maxWait = 60; // Tăng lên 6s cho chắc chắn (60 * 100ms)
 
+  // Điều kiện: readyState >= 2 (HAVE_CURRENT_DATA) VÀ width > 0
+  while (
+    (video.readyState < 2 || video.videoWidth === 0) &&
+    waitCount < maxWait
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    waitCount++;
+
+    // FIX 3: Nếu chờ được 1 nửa thời gian (3s) mà vẫn chưa lên, thử ép play lại
+    if (waitCount === 30) {
+      console.log("Camera slow start, forcing play...");
+      video.play().catch(() => {});
+    }
+  }
+
+  // Kiểm tra lần cuối
+  if (video.videoWidth === 0 || video.videoHeight === 0) {
+    // Fallback khẩn cấp: Nếu readyState ok mà size = 0, thử chờ thêm 500ms
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (video.videoWidth === 0) {
+      throw new Error(
+        "Lỗi thiết bị: Camera không trả về hình ảnh (Width=0). Hãy thử reload hoặc đổi trình duyệt."
+      );
+    }
+  }
+
+  // Delay ổn định cảm biến sáng (giữ nguyên logic cũ của bạn vì nó tốt)
+  await new Promise((resolve) => setTimeout(resolve, 500));
+
+  // Vẽ lên canvas
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
-
   const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  const imageData = canvas.toDataURL("image/jpeg", 0.9);
-  console.log(
-    "✅ Selfie captured:",
-    (imageData.length / 1024).toFixed(1) + "KB"
-  );
-
-  return imageData;
+  return canvas.toDataURL("image/jpeg", 0.9);
 }
 
-// Initialize QR Scanner
+// ===== INIT SCANNER =====
 function initQRScanner() {
+  // SỬA Ở ĐÂY: Chữ 'H' viết hoa
   html5QrCode = new Html5Qrcode("reader");
 
   Html5Qrcode.getCameras()
     .then((cameras) => {
       if (cameras && cameras.length) {
-        // Use back camera if available
+        // Ưu tiên camera sau (thường là index 1 trên điện thoại)
         const cameraId = cameras.length > 1 ? cameras[1].id : cameras[0].id;
 
         html5QrCode
@@ -138,66 +134,91 @@ function initQRScanner() {
             onScanSuccess,
             onScanFailure
           )
-          .catch((err) => {
-            console.error("Unable to start scanner:", err);
-          });
+          .catch((err) => console.error("Start failed:", err));
+      } else {
+        console.error("No cameras found.");
       }
     })
-    .catch((err) => {
-      console.error("Error getting cameras:", err);
-    });
+    .catch((err) => console.error("Error getting cameras:", err));
 }
 
+// ===== XỬ LÝ KHI QUÉT THÀNH CÔNG =====
 function onScanSuccess(decodedText, decodedResult) {
-  // Parse QR content: JSON format {"sessionId":1,"token":"xxx"}
   let qrData;
   try {
     qrData = JSON.parse(decodedText);
-    if (!qrData.sessionId || !qrData.token) {
-      showResult("Mã QR không hợp lệ! Thiếu sessionId hoặc token", "danger");
-      return;
-    }
+    if (!qrData.sessionId || !qrData.token) throw new Error();
   } catch (e) {
-    showResult("Mã QR không hợp lệ! Format không đúng", "danger");
+    showResult("Mã QR không đúng định dạng!", "danger");
     return;
   }
 
-  const qrId = qrData.sessionId;
-  const tokenSecret = qrData.token;
-
-  // Stop scanning
+  // Dừng camera quét
   html5QrCode.stop();
 
-  // Get location
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        performCheckIn(
-          qrId,
-          tokenSecret,
-          position.coords.latitude,
-          position.coords.longitude,
-          position.coords.accuracy // ===== CẢI TIẾN 4: Lấy GPS accuracy =====
-        );
-      },
-      function (error) {
-        showResult("Không thể lấy vị trí GPS. Vui lòng bật định vị!", "danger");
-      },
-      {
-        enableHighAccuracy: true, // Yêu cầu GPS chính xác cao
-        timeout: 10000, // Timeout 10s
-        maximumAge: 0, // Không dùng cache
-      }
-    );
-  } else {
-    showResult("Trình duyệt không hỗ trợ Geolocation!", "danger");
-  }
+  // STRICT: Bắt buộc lấy GPS
+  showResult("📍 Đang định vị GPS (Bắt buộc)...", "info");
+  getGPSStrict(qrData.sessionId, qrData.token);
 }
 
 function onScanFailure(error) {
-  // Ignore scan failures
+  /* Ignore */
 }
 
+// ===== HÀM LẤY GPS NGHIÊM NGẶT =====
+function getGPSStrict(qrId, tokenSecret) {
+  if (!navigator.geolocation) {
+    showStrictError("Thiết bị của bạn không có GPS. Không thể điểm danh!");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      console.log("GPS Success:", position.coords.accuracy + "m");
+      performCheckIn(
+        qrId,
+        tokenSecret,
+        position.coords.latitude,
+        position.coords.longitude,
+        position.coords.accuracy
+      );
+    },
+    (error) => {
+      console.warn("GPS Error:", error);
+      // NẾU LỖI GPS -> CHẶN LUÔN
+      if (error.code === 1) {
+        showStrictError(
+          "🛑 Bạn đã chặn quyền GPS! Vui lòng bật định vị trình duyệt để tiếp tục."
+        );
+      } else if (error.code === 2 || error.code === 3) {
+        showStrictError(
+          "📡 Không thể bắt được tín hiệu GPS. Hãy ra chỗ thoáng hoặc bật Wifi để hỗ trợ định vị."
+        );
+      } else {
+        showStrictError("❌ Lỗi định vị: " + error.message);
+      }
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 10000, // Đợi tối đa 10s
+      maximumAge: 0, // Không dùng cache cũ
+    }
+  );
+}
+
+// Hàm hiển thị lỗi chặn đứng và cho nút thử lại
+function showStrictError(msg) {
+  const resultDiv = $("#result");
+  resultDiv
+    .removeClass("alert-success alert-info alert-warning")
+    .addClass("alert-danger");
+  resultDiv.html(
+    `<i class="fas fa-exclamation-triangle"></i> ${msg}<br><br><button class="btn btn-sm btn-outline-danger" onclick="location.reload()">Thử lại</button>`
+  );
+  resultDiv.show();
+}
+
+// ===== GỬI REQUEST ĐIỂM DANH =====
 async function performCheckIn(
   qrId,
   tokenSecret,
@@ -205,206 +226,178 @@ async function performCheckIn(
   longitude,
   gpsAccuracy
 ) {
-  showResult("Đang xử lý điểm danh...", "info");
-
-  // Capture selfie
-  const imageData = captureSelfie();
-
-  // ===== CẢI TIẾN 5: NÉN ẢNH TRƯỚC KHI GỬI =====
-  const compressedImage = await compressImage(imageData, 640, 0.7);
-
-  // ===== CẢI TIẾN 6: DEVICE UUID THAY VÌ FINGERPRINT ĐƠN GIẢN =====
-  const deviceUid = getOrCreateDeviceUUID();
-
-  // ===== CẢI TIẾN 7: LẤY PUBLIC IP (từ API bên ngoài) =====
-  let clientIp = null;
   try {
-    const ipResponse = await fetch("https://api.ipify.org?format=json");
-    const ipData = await ipResponse.json();
-    clientIp = ipData.ip;
-    console.log("📍 Client Public IP:", clientIp);
+    showResult("📸 Giữ yên máy, đang chụp ảnh...", "info");
+    const imageData = await captureSelfie();
+
+    showResult("⏳ Đang xử lý...", "info");
+    const compressedImage = await compressImage(imageData, 640, 0.7);
+    const deviceUid = getOrCreateDeviceUUID();
+
+    // Lấy IP (Optional)
+    let clientIp = null;
+    try {
+      const res = await fetch("https://api.ipify.org?format=json");
+      const data = await res.json();
+      clientIp = data.ip;
+    } catch (e) {}
+
+    const payload = {
+      sessionId: qrId,
+      token: tokenSecret,
+      latitude: latitude, // Chắc chắn có giá trị
+      longitude: longitude, // Chắc chắn có giá trị
+      gpsAccuracy: gpsAccuracy,
+      clientIp: clientIp,
+      deviceId: deviceUid,
+      selfieBase64: compressedImage,
+      timestamp: Date.now(),
+    };
+
+    if (navigator.onLine) {
+      sendCheckInRequest(payload);
+    } else {
+      saveOffline(payload);
+    }
   } catch (error) {
-    console.warn("Cannot get public IP:", error);
-    // Nếu không lấy được IP, backend sẽ lấy từ request header
-  }
-
-  // ===== STORE-AND-FORWARD: Tạo payload với timestamp =====
-  const payload = {
-    sessionId: qrId,
-    token: tokenSecret,
-    latitude: latitude,
-    longitude: longitude,
-    gpsAccuracy: gpsAccuracy,
-    clientIp: clientIp,
-    deviceId: deviceUid,
-    selfieBase64: compressedImage,
-    timestamp: Date.now(), // ===== QUAN TRỌNG: Thời điểm QUÉT (không phải thời điểm gửi) =====
-  };
-
-  // ===== STORE-AND-FORWARD: Kiểm tra mạng trước khi gửi =====
-  if (navigator.onLine) {
-    sendCheckInRequest(payload);
-  } else {
-    saveOffline(payload);
+    showResult("Lỗi xử lý: " + error.message, "danger");
+    setTimeout(initQRScanner, 3000);
   }
 }
 
-// ===== STORE-AND-FORWARD: Hàm gửi request điểm danh =====
 function sendCheckInRequest(payload) {
   const contextPath = window.location.pathname.split("/")[1];
-  const apiUrl = `/${contextPath}/api/v2/attendance/check-in`;
-
   $.ajax({
-    url: apiUrl,
+    url: `/${contextPath}/api/v2/attendance/check-in`,
     method: "POST",
     contentType: "application/json",
     data: JSON.stringify(payload),
     success: function (response) {
-      // Xóa offline data nếu gửi thành công
       localStorage.removeItem("offline_attendance");
-
       if (response.success) {
-        showResult(
-          "✅ Điểm danh thành công! Khoảng cách: " +
-            response.distance.toFixed(2) +
-            "m",
-          "success"
+        showResult("✅ " + response.message, "success");
+        setTimeout(
+          () => (window.location.href = `/${contextPath}/student/dashboard`),
+          2000
         );
-        setTimeout(function () {
-          const contextPath = window.location.pathname.split("/")[1];
-          window.location.href = `/${contextPath}/student/dashboard`;
-        }, 2000);
       } else {
-        showResult("❌ Điểm danh thất bại: " + response.message, "danger");
-        setTimeout(function () {
-          initQRScanner();
-        }, 3000);
+        showResult("❌ " + response.message, "danger");
+        setTimeout(initQRScanner, 3000);
       }
     },
     error: function (xhr) {
-      const response = xhr.responseJSON;
-
-      // ===== DEBUG: Log chi tiết lỗi =====
-      console.error("❌ Request failed:");
-      console.error("   Status:", xhr.status);
-      console.error("   Status Text:", xhr.statusText);
-      console.error("   Response:", response);
-      console.error("   Navigator Online:", navigator.onLine);
-
-      // ===== STORE-AND-FORWARD: CHỈ lưu offline khi THỰC SỰ mất mạng =====
-      // Status 0 = Network error (không có response từ server)
-      // Status >= 500 = Server error (server có vấn đề)
-      if (xhr.status === 0) {
-        console.warn(
-          "⚠️ Network error detected (status 0) - Checking connection..."
-        );
-
-        // Kiểm tra kỹ: Có thể do CORS, timeout, hoặc thực sự mất mạng
-        if (!navigator.onLine) {
-          console.log("📴 Offline confirmed - Saving data");
-          saveOffline(payload);
-          return;
-        } else {
-          // Có mạng nhưng status 0 -> Có thể do CORS, URL sai, hoặc server chưa chạy
-          showResult(
-            "❌ Không thể kết nối server. Vui lòng kiểm tra:<br>" +
-              "- Server có đang chạy không?<br>" +
-              "- URL API có đúng không?<br>" +
-              "- CORS có được cấu hình không?",
-            "danger"
-          );
-        }
-      } else if (xhr.status >= 500) {
-        // Server error - Không lưu offline vì đây là lỗi backend logic
-        showResult(
-          "❌ Lỗi server (500): " +
-            (response ? response.message : "Server đang gặp sự cố"),
-          "danger"
-        );
-      } else if (xhr.status === 429) {
-        // ===== XỬ LÝ RATE LIMITING =====
-        showResult(
-          "⚠️ " +
-            (response ? response.message : "Thao tác quá nhanh. Vui lòng chờ."),
-          "warning"
-        );
-      } else if (xhr.status === 401 || xhr.status === 403) {
-        // Unauthorized - Redirect to login
-        showResult(
-          "❌ Phiên đăng nhập hết hạn. Đang chuyển về trang đăng nhập...",
-          "danger"
-        );
-        setTimeout(function () {
-          const contextPath = window.location.pathname.split("/")[1];
-          window.location.href = `/${contextPath}/login`;
-        }, 2000);
-        return;
+      if (xhr.status === 0 && !navigator.onLine) {
+        saveOffline(payload);
       } else {
-        // Client error (400, 404...) hoặc lỗi khác
-        showResult(
-          "❌ Lỗi: " + (response ? response.message : "Yêu cầu không hợp lệ"),
-          "danger"
-        );
+        let msg =
+          xhr.responseJSON && xhr.responseJSON.message
+            ? xhr.responseJSON.message
+            : "Lỗi server";
+        showResult("❌ " + msg, "danger");
+        setTimeout(initQRScanner, 3000);
       }
-
-      setTimeout(function () {
-        initQRScanner();
-      }, 3000);
     },
   });
 }
 
-// ===== STORE-AND-FORWARD: Lưu dữ liệu offline =====
+// ===== OFFLINE SYNC =====
 function saveOffline(payload) {
   localStorage.setItem("offline_attendance", JSON.stringify(payload));
-  showResult(
-    "⚠️ Mất kết nối! Dữ liệu đã được lưu. Hệ thống sẽ tự động đồng bộ khi có mạng.",
-    "warning"
-  );
-  console.log("💾 Saved offline data:", payload);
-
-  // Đăng ký sự kiện: Khi có mạng lại thì tự gửi
+  showResult("⚠️ Mất mạng! Dữ liệu đã lưu, sẽ tự gửi khi có mạng.", "warning");
   window.addEventListener("online", syncOfflineData);
-
-  // Thử đồng bộ lại sau 5 giây (trường hợp mạng chập chờn)
-  setTimeout(syncOfflineData, 5000);
 }
 
-// ===== STORE-AND-FORWARD: Đồng bộ dữ liệu khi có mạng =====
 function syncOfflineData() {
-  const savedData = localStorage.getItem("offline_attendance");
-  if (savedData && navigator.onLine) {
-    console.log("🔄 Có mạng trở lại. Đang đồng bộ dữ liệu...");
-    const payload = JSON.parse(savedData);
-    showResult("🔄 Đang đồng bộ dữ liệu điểm danh...", "info");
-    sendCheckInRequest(payload);
+  const saved = localStorage.getItem("offline_attendance");
+  if (saved && navigator.onLine) sendCheckInRequest(JSON.parse(saved));
+}
+
+function showResult(msg, type) {
+  const r = $("#result");
+  r.attr("class", "alert alert-" + type)
+    .html(msg)
+    .show();
+}
+
+// ===== INIT LOGIC (STRICT) =====
+$(document).ready(function () {
+  syncOfflineData();
+  checkPermissionsAndInit();
+});
+
+async function checkPermissionsAndInit() {
+  try {
+    // 1. Check Camera
+    if (!(await checkCameraPermission())) {
+      showPermissionBlock("camera");
+      return;
+    }
+
+    // 2. Check GPS (STRICT)
+    // Nếu không có quyền -> Chặn luôn, không hiện Scanner
+    if (!(await checkGPSPermission())) {
+      showPermissionBlock("gps");
+      return;
+    }
+
+    // 3. Nếu đủ quyền -> Khởi động
+    showResult("Đang khởi động...", "info");
+    await initCamera();
+    initQRScanner();
+    showResult("Sẵn sàng quét mã QR", "success");
+  } catch (e) {
+    showResult("Lỗi khởi tạo: " + e.message, "danger");
   }
 }
 
-// ===== Kiểm tra và đồng bộ dữ liệu offline khi load trang =====
-$(document).ready(function () {
-  // Thử đồng bộ dữ liệu offline nếu có
-  syncOfflineData();
-});
-
-function showResult(message, type) {
-  const resultDiv = $("#result");
-  resultDiv.removeClass("alert-success alert-danger alert-info alert-warning");
-  resultDiv.addClass("alert-" + type);
-  resultDiv.html(
-    '<i class="fas fa-' +
-      (type === "success"
-        ? "check-circle"
-        : type === "danger"
-        ? "exclamation-circle"
-        : "info-circle") +
-      '"></i> ' +
-      message
-  );
-  resultDiv.show();
+async function checkCameraPermission() {
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video: true });
+    s.getTracks().forEach((t) => t.stop());
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-$(document).ready(function () {
-  initCamera();
-  initQRScanner();
-});
+async function checkGPSPermission() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(false);
+      return;
+    }
+
+    // Cố gắng lấy vị trí ngay lập tức để check quyền
+    navigator.geolocation.getCurrentPosition(
+      () => resolve(true), // Thành công -> Có quyền
+      (err) => {
+        console.warn("GPS Init Check Failed:", err);
+        resolve(false); // Thất bại -> Không có quyền
+      },
+      { timeout: 5000 }
+    );
+  });
+}
+
+function showPermissionBlock(type) {
+  const p = document.getElementById("permissionSection");
+  document.getElementById("result").style.display = "none";
+  p.style.display = "block";
+
+  const btn = document.getElementById("requestPermissionsBtn");
+  const msg = document.getElementById("permMessage") || p; // Giả sử có thẻ p để hiện text
+
+  if (type === "camera") {
+    btn.innerText = "Cấp quyền Camera";
+    // msg.innerText = "Ứng dụng cần Camera để quét mã QR.";
+  } else {
+    btn.innerText = "Cấp quyền Vị trí (GPS)";
+    // msg.innerText = "BẮT BUỘC bật GPS để điểm danh. Vui lòng cấp quyền!";
+  }
+
+  btn.onclick = async () => {
+    p.style.display = "none";
+    // Reload lại flow check
+    checkPermissionsAndInit();
+  };
+}

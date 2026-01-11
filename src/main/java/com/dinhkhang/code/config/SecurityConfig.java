@@ -84,9 +84,7 @@ public class SecurityConfig {
                                                 .permitAll())
                                 .exceptionHandling(ex -> ex
                                                 .accessDeniedPage("/access-denied"))
-                                .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers("/api/**") // Disable CSRF for API endpoints
-                                );
+                                .csrf(csrf -> csrf.disable()); // Disable CSRF for all endpoints
 
                 return http.build();
         }

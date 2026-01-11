@@ -41,4 +41,7 @@ public interface ClassRepository extends JpaRepository<ClassEntity, Long> {
     List<ClassEntity> findByTeacherAndSemester(@Param("teacher") User teacher, @Param("semester") String semester);
 
     boolean existsByClassCode(String classCode);
+
+    @Query("SELECT COUNT(c) > 0 FROM ClassEntity c WHERE c.id = :classId AND EXISTS (SELECT 1 FROM c.students s WHERE s.id = :studentId)")
+    boolean existsByIdAndStudents_Id(@Param("classId") Long classId, @Param("studentId") Long studentId);
 }

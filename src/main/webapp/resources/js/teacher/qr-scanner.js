@@ -67,7 +67,7 @@ function startAutoRefresh() {
   }, QR_REFRESH_INTERVAL * 1000);
 
   console.log(
-    "✅ Dynamic QR enabled: Refresh every " + QR_REFRESH_INTERVAL + "s"
+    " Dynamic QR enabled: Refresh every " + QR_REFRESH_INTERVAL + "s"
   );
 }
 

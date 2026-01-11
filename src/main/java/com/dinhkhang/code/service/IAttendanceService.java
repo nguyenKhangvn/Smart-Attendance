@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IAttendanceService {
-    AttendanceResponse checkIn(CheckInRequest request, String username);
-
     List<AttendanceRecord> getAttendanceBySession(Long sessionId);
 
     List<AttendanceRecord> getStudentAttendance(Long studentId, Long classId);

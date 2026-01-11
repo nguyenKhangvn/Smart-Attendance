@@ -3,6 +3,7 @@ package com.dinhkhang.code.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "qr_sessions")
@@ -40,7 +41,9 @@ public class QRSession {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        // Ép hệ thống luôn lấy giờ Việt Nam khi lưu vào DB, bất kể Server đặt múi giờ
+        // nào
+        this.createdAt = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
     }
 
     // Constructors

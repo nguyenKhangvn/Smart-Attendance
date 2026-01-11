@@ -44,7 +44,7 @@ public class QRService implements IQRService {
             classSession.setStatus(ClassSession.SessionStatus.IN_PROGRESS);
             classSession.setUpdatedAt(LocalDateTime.now());
             classSession = classSessionRepository.save(classSession);
-            System.out.println("✅ Session " + sessionId + " started automatically (status: IN_PROGRESS)");
+            System.out.println(" Session " + sessionId + " started automatically (status: IN_PROGRESS)");
         }
 
         // Generate unique token BẢO MẬT - 32 characters

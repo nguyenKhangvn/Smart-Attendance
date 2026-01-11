@@ -214,16 +214,29 @@ public class AttendanceRecord {
     }
 
     public enum AttendanceStatus {
+        // --- TRẠNG THÁI THÀNH CÔNG ---
         SUCCESS, // Điểm danh thành công
-        PENDING_REVIEW, // Chờ giáo viên xác nhận (GPS sai số lớn hoặc vấn đề khác)
-        FAILED_INVALID_QR, // QR không hợp lệ hoặc hết hạn
-        FAILED_DISTANCE, // Ngoài phạm vi cho phép
-        FAILED_DUPLICATE_DEVICE, // Thiết bị đã được sử dụng
+        LATE, // Đi muộn (Thành công nhưng muộn)
+
+        // --- TRẠNG THÁI CẦN DUYỆT (SOFT CHECK) ---
+        PENDING_REVIEW, // Chờ giáo viên duyệt (chung)
+        GPS_POOR_SIGNAL, // GPS yếu/trong nhà - Chờ duyệt
+
+        // --- TRẠNG THÁI THẤT BẠI (LỖI NGƯỜI DÙNG) ---
+        FAILED_INVALID_QR, // QR sai hoặc hết hạn
+        FAILED_DISTANCE, // Quá xa (và không dùng mạng trường)
+        FAILED_DUPLICATE_DEVICE, // Thiết bị đã dùng cho người khác
         FAILED_ALREADY_CHECKED, // Đã điểm danh rồi
-        FAILED_FACE_VERIFICATION, // Xác thực khuôn mặt thất bại
-        FAILED_IMAGE_UPLOAD, // Lỗi lưu ảnh minh chứng
-        GPS_POOR_SIGNAL, // GPS không ổn định (indoor) - Chờ xác nhận
-        ABSENT, // Vắng
-        LATE // Đi muộn
+        FAILED_FACE_VERIFICATION, // Khuôn mặt không khớp
+        FAILED_INVALID_IMAGE, // Ảnh selfie không hợp lệ (đen/trắng/corrupted)
+        FAILED_NOT_IN_CLASS, // [QUAN TRỌNG] Sinh viên không thuộc lớp này
+        FAILED_SESSION_NOT_ACTIVE, // [QUAN TRỌNG] Buổi học chưa mở hoặc đã đóng
+        FAILED_SYSTEM_ERROR,
+        // --- TRẠNG THÁI LỖI HỆ THỐNG ---
+        FAILED_IMAGE_UPLOAD, // Lỗi upload ảnh
+        FAILED_ERROR, // Lỗi server/runtime khác
+
+        // --- TRẠNG THÁI KHÁC ---
+        ABSENT // Vắng mặt (Dùng cho job chạy cuối ngày)
     }
 }
