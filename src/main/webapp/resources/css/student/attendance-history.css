@@ -1,0 +1,234 @@
+/* Student Attendance History - Modern Styling */
+
+/* ===== STATISTICS CARDS ===== */
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card.border-primary {
+    border-left: 5px solid #0d6efd;
+}
+
+.card.border-success {
+    border-left: 5px solid #198754;
+}
+
+.card.border-warning {
+    border-left: 5px solid #ffc107;
+}
+
+.card.border-danger {
+    border-left: 5px solid #dc3545;
+}
+
+.card-body h3 {
+    font-weight: 700;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ===== TABLE STYLING ===== */
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#attendanceTable {
+    margin-bottom: 0;
+}
+
+#attendanceTable thead th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem 0.75rem;
+}
+
+#attendanceTable tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+#attendanceTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+#attendanceTable tbody td {
+    vertical-align: middle;
+    padding: 0.9rem 0.75rem;
+    font-size: 0.95rem;
+}
+
+/* ===== BADGE ENHANCEMENTS ===== */
+.badge {
+    padding: 0.5rem 0.8rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.badge i {
+    font-size: 0.9rem;
+}
+
+/* ===== SEARCH & FILTERS ===== */
+#searchInput {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#searchInput:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ===== PAGINATION ===== */
+.pagination {
+    gap: 0.25rem;
+}
+
+.pagination .page-item .page-link {
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 0.5rem 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    font-weight: 600;
+}
+
+.pagination .page-item.disabled .page-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== PAGE SIZE SELECTOR ===== */
+.form-select-sm {
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.2s ease;
+}
+
+.form-select-sm:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ===== HEADER ===== */
+.container-fluid h2 {
+    font-weight: 700;
+    color: #212529;
+}
+
+.container-fluid .text-muted {
+    font-size: 1rem;
+    color: #6c757d !important;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+/* ===== CARD HEADER ===== */
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    padding: 1rem 1.25rem;
+}
+
+.card-header h5 {
+    font-weight: 700;
+    color: #212529;
+    margin: 0;
+}
+
+/* ===== EMPTY STATE ===== */
+.text-center.text-muted {
+    padding: 3rem 1rem;
+    color: #6c757d !important;
+    font-size: 1rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .card-body h3 {
+        font-size: 2rem;
+    }
+
+    #attendanceTable {
+        font-size: 0.85rem;
+    }
+
+    #attendanceTable thead th,
+    #attendanceTable tbody td {
+        padding: 0.7rem 0.5rem;
+    }
+
+    .badge {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card,
+.table-responsive {
+    animation: fadeIn 0.4s ease;
+}

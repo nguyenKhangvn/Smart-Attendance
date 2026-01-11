@@ -1,29 +1,104 @@
-/* Teacher QR Scanner Styles */
+/* Teacher QR Scanner Styles - Updated for Dynamic QR */
+
+/* 1. Container chính */
 .qr-container {
     background: white;
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    border-top: 5px solid #007bff; /* Điểm nhấn màu xanh phía trên */
 }
 
+/* 2. Khu vực hiển thị mã QR */
 #qrCode {
-    max-width: 400px;
+    min-height: 350px; /* Giữ chiều cao cố định để không bị giật layout khi load ảnh */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 20px auto;
-    border: 5px solid #007bff;
+    position: relative;
+}
+
+/* Style cho ảnh QR khi được sinh ra */
+#qrCode img {
+    max-width: 100%;
+    max-height: 400px;
+    border: 8px solid #f8f9fa; /* Viền trắng dày */
+    outline: 2px solid #007bff; /* Viền xanh mỏng bên ngoài */
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    padding: 10px;
+    background: white;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Hiệu ứng khi đang refresh ảnh mới (Optional - cần thêm class bằng JS nếu muốn) */
+#qrCode img.changing {
+    transform: scale(0.95);
+    opacity: 0.7;
+}
+
+/* 3. Spinner Loading (khi chưa có QR) */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* 4. Thanh Progress Bar (Thay thế Timer cũ) */
+.progress {
+    height: 12px !important;
+    background-color: #e9ecef;
     border-radius: 10px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    margin: 10px auto;
+    overflow: hidden;
 }
 
-.timer {
-    font-size: 3rem;
+#qrProgressBar {
+    transition: width 0.1s linear; /* Quan trọng: Linear giúp thanh chạy mượt, không bị giật */
+}
+
+/* Màu sắc thanh progress bar tùy chỉnh */
+.bg-success {
+    background-color: #28a745 !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* 5. Trạng thái & Text */
+#qrStatus {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-top: 15px;
+    padding: 8px 15px;
+    border-radius: 50px;
+    background-color: #e7f1ff;
+    color: #007bff;
+    display: inline-block;
+}
+
+.text-muted {
+    font-size: 0.9rem;
+}
+
+#refreshText {
+    font-family: 'Courier New', Courier, monospace;
     font-weight: bold;
-    color: #28a745;
+    color: #495057;
 }
 
-.timer.warning {
-    color: #ffc107;
-}
-
-.timer.danger {
-    color: #dc3545;
+/* 6. Responsive cho Mobile */
+@media (max-width: 576px) {
+    .qr-container {
+        padding: 20px;
+    }
+    
+    #qrCode img {
+        max-height: 280px;
+    }
 }

@@ -3,6 +3,7 @@
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
+    display: block; /* Hiển thị lúc đầu */
 }
 
 #preview {
@@ -11,10 +12,66 @@
     margin: 20px auto;
     border: 3px solid #007bff;
     border-radius: 10px;
-    display: block; /*  Đảm bảo video hiển thị */
-    background: #000; /*  Background đen khi chưa load */
+    display: none; /* Ẩn lúc đầu, chỉ hiện sau khi quét QR xong */
+    background: #000; /* Background đen khi chưa load */
 }
 
 #canvas {
-    display: none; /*  Ẩn canvas - chỉ dùng để capture */
+    display: none; /* Ẩn canvas - chỉ dùng để capture */
+}
+
+/* ===== PERMISSION GUIDE POPUP STYLES ===== */
+
+/* Popup Overlay (Màn hình đen mờ) */
+.permission-guide-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    /* Đậm hơn chút để tập trung */
+    z-index: 9999;
+    display: none;
+    /* Mặc định ẩn, JS sẽ bật lên */
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    /* Hiệu ứng mờ nền phía sau */
+}
+
+/* Card chứa nội dung */
+.guide-card {
+    background: white;
+    width: 90%;
+    max-width: 420px;
+    padding: 30px 20px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    animation: popupSlideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* Các bước hướng dẫn */
+.guide-step {
+    background: #f1f8ff;
+    border-left: 5px solid #0d6efd;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: left;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    line-height: 1.5;
+    color: #333;
+}
+
+@keyframes popupSlideIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }

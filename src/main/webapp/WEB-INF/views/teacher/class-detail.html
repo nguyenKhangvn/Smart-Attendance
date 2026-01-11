@@ -203,10 +203,10 @@
                 </td>
                 <td>
                   <div class="btn-group btn-group-sm">
-                    <button class="btn btn-success" data-bs-toggle="modal"
-                      th:attr="data-bs-target='#qrModal' + ${attendanceSession.id}" title="🔳 Tạo QR Code điểm danh">
+                    <a th:href="@{/teacher/sessions/{id}/qr(id=${attendanceSession.id})}" class="btn btn-success"
+                      title="🔳 Tạo QR Code điểm danh">
                       <i class="fas fa-qrcode me-1"></i> Tạo QR
-                    </button>
+                    </a>
                     <a th:href="@{/teacher/sessions/{id}/attendance(id=${attendanceSession.id})}" class="btn btn-info"
                       title="📋 Xem danh sách điểm danh">
                       <i class="fas fa-list-check me-1"></i> Xem
@@ -214,13 +214,12 @@
                   </div>
 
                   <!-- QR Modal -->
-                  <div class="modal fade" th:id="'qrModal' + ${attendanceSession.id}" tabindex="-1">
+                  <!-- <div class="modal fade" th:id="'qrModal' + ${attendanceSession.id}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                       <div class="modal-content">
                         <div class="modal-header bg-primary text-white">
                           <h5 class="modal-title">
-                            <i class="fas fa-qrcode me-2"></i>QR Code Điểm
-                            Danh
+                            <i class="fas fa-qrcode me-2"></i>QR Code Điểm danh
                           </h5>
                           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
@@ -242,7 +241,7 @@
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                 </td>
               </tr>
               <tr th:if="${#lists.isEmpty(sessions)}">
