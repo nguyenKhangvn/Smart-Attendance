@@ -86,10 +86,10 @@ public class ClassService implements IClassService {
 
     @Transactional(readOnly = true)
     public ClassEntity getClassDetail(Long id) {
-        ClassEntity classEntity = classRepository.findById(id)
+        ClassEntity classEntity = classRepository.findByIdWithTeacher(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        classEntity.getStudents().size();
+        // classEntity.getStudents().size(); // Đã được fetch eagerly trong findByIdWithTeacher
 
         return classEntity;
     }

@@ -35,17 +35,33 @@
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th><a href="#" onclick="changeSort('studentCode', '${sortDir}')">Mã SV <i
-                                                    th:class="${sortBy == 'studentCode' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/students(page=${currentPage}, size=${pageSize}, sortBy='studentCode', sortDir=${sortBy == 'studentCode' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Mã SV <i
+                                                    th:class="${sortBy == 'studentCode' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
-                                        <th><a href="#" onclick="changeSort('username', '${sortDir}')">Username <i
-                                                    th:class="${sortBy == 'username' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/students(page=${currentPage}, size=${pageSize}, sortBy='username', sortDir=${sortBy == 'username' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Username <i
+                                                    th:class="${sortBy == 'username' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
-                                        <th><a href="#" onclick="changeSort('fullName', '${sortDir}')">Họ tên <i
-                                                    th:class="${sortBy == 'fullName' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/students(page=${currentPage}, size=${pageSize}, sortBy='fullName', sortDir=${sortBy == 'fullName' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Họ tên <i
+                                                    th:class="${sortBy == 'fullName' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
-                                        <th><a href="#" onclick="changeSort('email', '${sortDir}')">Email <i
-                                                    th:class="${sortBy == 'email' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/students(page=${currentPage}, size=${pageSize}, sortBy='email', sortDir=${sortBy == 'email' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Email <i
+                                                    th:class="${sortBy == 'email' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
                                         <th>SĐT</th>
                                         <th>Trạng thái</th>

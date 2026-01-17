@@ -87,7 +87,7 @@
                 <!-- Previous Button -->
                 <li class="page-item" th:classappend="${page.hasPrevious()} ? '' : 'disabled'">
                     <a class="page-link"
-                        th:href="${page.hasPrevious()} ? @{'${baseUrl}'(page=${page.number - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
+                        th:href="${page.hasPrevious()} ? @{${baseUrl}(page=${page.number - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
                         th:aria-disabled="${!page.hasPrevious()}">
                         Previous
                     </a>
@@ -97,14 +97,14 @@
                 <li th:each="pageNum : ${#numbers.sequence(0, page.totalPages - 1)}" class="page-item"
                     th:classappend="${pageNum == page.number} ? 'active' : ''">
                     <a class="page-link"
-                        th:href="@{'${baseUrl}'(page=${pageNum}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})}"
+                        th:href="@{${baseUrl}(page=${pageNum}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})}"
                         th:text="${pageNum + 1}">1</a>
                 </li>
 
                 <!-- Next Button -->
                 <li class="page-item" th:classappend="${page.hasNext()} ? '' : 'disabled'">
                     <a class="page-link"
-                        th:href="${page.hasNext()} ? @{'${baseUrl}'(page=${page.number + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
+                        th:href="${page.hasNext()} ? @{${baseUrl}(page=${page.number + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
                         th:aria-disabled="${!page.hasNext()}">
                         Next
                     </a>

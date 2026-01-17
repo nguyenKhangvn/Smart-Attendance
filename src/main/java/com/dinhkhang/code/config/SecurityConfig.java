@@ -83,8 +83,8 @@ public class SecurityConfig {
                                                 .deleteCookies("JSESSIONID")
                                                 .permitAll())
                                 .exceptionHandling(ex -> ex
-                                                .accessDeniedPage("/access-denied"))
-                                .csrf(csrf -> csrf.disable()); // Disable CSRF for all endpoints
+                                                .accessDeniedPage("/access-denied"));
+                                //.csrf(csrf -> csrf.disable()); // Disable CSRF for all endpoints
 
                 return http.build();
         }

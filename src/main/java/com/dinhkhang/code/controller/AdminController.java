@@ -290,7 +290,7 @@ public class AdminController {
     @GetMapping("/classes/edit/{id}")
     public String showEditClassForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
-            ClassEntity classEntity = classService.findById(id)
+            ClassEntity classEntity = classService.findByIdWithTeacher(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
 
             List<User> teachers = userService.getUsersByRole(User.Role.TEACHER);

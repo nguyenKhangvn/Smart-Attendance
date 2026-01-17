@@ -65,7 +65,7 @@ public class StudentController {
         User student = userService.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        ClassEntity classEntity = classService.findById(id)
+        ClassEntity classEntity = classService.findByIdWithTeacher(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
         List<AttendanceRecord> attendanceRecords = attendanceService.getStudentAttendance(student.getId(), id);

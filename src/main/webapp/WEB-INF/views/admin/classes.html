@@ -37,15 +37,27 @@
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th><a href="#" onclick="changeSort('classCode', '${sortDir}')">Mã lớp <i
-                                                    th:class="${sortBy == 'classCode' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/classes(page=${currentPage}, size=${pageSize}, sortBy='classCode', sortDir=${sortBy == 'classCode' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Mã lớp <i
+                                                    th:class="${sortBy == 'classCode' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
-                                        <th><a href="#" onclick="changeSort('subjectName', '${sortDir}')">Môn học <i
-                                                    th:class="${sortBy == 'subjectName' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/classes(page=${currentPage}, size=${pageSize}, sortBy='subjectName', sortDir=${sortBy == 'subjectName' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Môn học <i
+                                                    th:class="${sortBy == 'subjectName' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
                                         <th>Giáo viên</th>
-                                        <th><a href="#" onclick="changeSort('semester', '${sortDir}')">Học kỳ <i
-                                                    th:class="${sortBy == 'semester' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i></a>
+                                        <th>
+                                            <a
+                                                th:href="@{/admin/classes(page=${currentPage}, size=${pageSize}, sortBy='semester', sortDir=${sortBy == 'semester' && sortDir == 'asc' ? 'desc' : 'asc'})}">
+                                                Học kỳ <i
+                                                    th:class="${sortBy == 'semester' ? (sortDir == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                            </a>
                                         </th>
                                         <th>Số học sinh</th>
                                         <th>Trạng thái</th>

@@ -60,11 +60,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#how-it-works">Hướng dẫn</a>
                     </li>
-                    <li class="nav-item" sec:authorize="isAnonymous()">
+                    <!-- <li class="nav-item" sec:authorize="isAnonymous()">
                         <a class="nav-link" th:href="@{/register}">
                             <i class="fas fa-user-plus"></i> Đăng ký
                         </a>
-                    </li>
+                    </li> -->
                     <li class="nav-item" sec:authorize="isAnonymous()">
                         <a class="btn btn-primary ms-2" th:href="@{/login}">
                             <i class="fas fa-sign-in-alt"></i> Đăng nhập
@@ -91,9 +91,9 @@
                         Hệ thống điểm danh thông minh với công nghệ QR Code, định vị GPS và xác thực đa lớp
                     </p>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                        <a th:href="@{/register}" class="btn btn-light btn-lg px-5" sec:authorize="isAnonymous()">
+                        <!-- <a th:href="@{/register}" class="btn btn-light btn-lg px-5" sec:authorize="isAnonymous()">
                             <i class="fas fa-user-plus"></i> Đăng ký ngay
-                        </a>
+                        </a> -->
                         <a th:href="@{/login}" class="btn btn-outline-light btn-lg px-5" sec:authorize="isAnonymous()">
                             <i class="fas fa-sign-in-alt"></i> Đăng nhập
                         </a>
@@ -118,7 +118,7 @@
                         </div>
                         <h5 class="card-title fw-bold mb-3">QR Code Động</h5>
                         <p class="card-text text-muted">
-                            Mã QR tự động làm mới mỗi buổi học, có thời hạn 5 phút để ngăn chặn gian lận
+                            Mã QR tự động làm mới mỗi buổi học, có thời hạn 10s để ngăn chặn gian lận
                         </p>
                     </div>
                 </div>
