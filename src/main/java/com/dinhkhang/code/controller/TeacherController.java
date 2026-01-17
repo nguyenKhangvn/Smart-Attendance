@@ -1,5 +1,6 @@
 package com.dinhkhang.code.controller;
 
+import com.dinhkhang.code.dto.StudentDTO;
 import com.dinhkhang.code.dto.StudentImportDTO;
 import com.dinhkhang.code.entity.AttendanceRecord;
 import com.dinhkhang.code.entity.ClassEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/teacher")
@@ -277,28 +279,25 @@ public class TeacherController {
                 return "redirect:/teacher/classes/" + classId;
             }
 
-            // Parse Excel file
-            List<StudentImportDTO> studentDTOs = excelImportService.parseExcelFile(file);
+            // GỌI ĐÚNG HÀM
+            Map<String, Object> result = excelImportService.importStudentCodesFromExcel(file);
 
-            if (studentDTOs.isEmpty()) {
+            @SuppressWarnings("unchecked")
+            List<String> studentCodes = (List<String>) result.get("studentCodes");
+
+            if (studentCodes.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "File Excel không có dữ liệu hợp lệ!");
                 return "redirect:/teacher/classes/" + classId;
             }
 
-            // Import students
-            List<User> importedStudents = excelImportService.importStudents(studentDTOs);
-
             // Add students to class
-            for (User student : importedStudents) {
+            for (String studentCode : studentCodes) {
                 try {
-                    classService.addStudentToClass(classId, student.getId());
+                    classService.addStudentToClass(classId, Long.parseLong(studentCode));
                 } catch (Exception e) {
                     System.err.println("Error adding student to class: " + e.getMessage());
                 }
             }
-
-            redirectAttributes.addFlashAttribute("success",
-                    "Đã import thành công " + importedStudents.size() + " học sinh!");
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi import file: " + e.getMessage());
