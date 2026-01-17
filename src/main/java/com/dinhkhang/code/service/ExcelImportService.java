@@ -277,7 +277,6 @@ public class ExcelImportService {
                     // Column 0: Student Code
                     String studentCode = getCellValueAsString(row.getCell(0));
                     if (studentCode.isEmpty()) {
-                        errors.add("Dòng " + (i + 1) + ": Thiếu mã sinh viên");
                         continue;
                     }
                     studentCodes.add(studentCode);

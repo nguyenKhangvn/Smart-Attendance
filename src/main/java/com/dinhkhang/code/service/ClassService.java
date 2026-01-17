@@ -69,20 +69,28 @@ public class ClassService implements IClassService {
         return classRepository.save(classEntity);
     }
 
-    public void addStudentToClass(Long classId, Long studentId) {
+    public void addStudentToClass(Long classId, Long studentCode) {
+
         ClassEntity classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        User student = userRepository.findByStudentCode(studentCode.toString())
+                .orElseThrow(() ->
+                        new RuntimeException("Student not found with code: " + studentCode.toString())
+                );
 
         if (student.getRole() != User.Role.STUDENT) {
             throw new RuntimeException("User is not a student");
         }
 
+        if (classEntity.getStudents().contains(student)) {
+            return;
+        }
+
         classEntity.getStudents().add(student);
         classRepository.save(classEntity);
     }
+
 
     @Transactional(readOnly = true)
     public ClassEntity getClassDetail(Long id) {

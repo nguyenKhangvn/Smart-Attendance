@@ -23,7 +23,7 @@
         <div class="qr-container">
 
           <h2 class="mb-2 text-primary fw-bold">
-            <i class="fas fa-qrcode"></i> Mã QR Động (Dynamic)
+            Mã QR Động
           </h2>
           <h4 th:text="${classSession.sessionName}" class="mb-1">Tên Buổi Học</h4>
           <p class="text-muted mb-4" th:text="${classSession.classEntity.subjectName}">
@@ -34,7 +34,6 @@
           <div class="card mb-3 shadow-sm border-0">
             <div class="card-header bg-info text-white">
               <h6 class="mb-0">
-                <i class="fas fa-map-marked-alt me-2"></i>
                 Vị trí điểm danh (Kéo thả ghim để chỉnh nếu sai)
               </h6>
             </div>
@@ -42,7 +41,6 @@
               <div id="map" style="height: 300px; width: 100%;"></div>
             </div>
             <div class="card-footer text-muted small">
-              <i class="fas fa-info-circle"></i>
               Vị trí tự động từ GPS. Nếu sai, hãy kéo ghim đỏ về đúng vị trí bạn đang ngồi.
             </div>
           </div>
@@ -66,13 +64,13 @@
             </div>
 
             <div id="qrStatus" class="mt-2 small">
-              <i class="fas fa-satellite-dish"></i> Đang khởi tạo...
+              Đang khởi tạo...
             </div>
           </div>
 
           <div class="alert alert-warning border-0 shadow-sm text-start mb-4">
             <div class="d-flex">
-              <div class="me-3"><i class="fas fa-shield-alt fa-2x text-warning"></i></div>
+              <div class="me-3"></div>
               <div>
                 <strong>Chế độ Bảo mật cao:</strong>
                 <ul class="mb-0 small mt-1 ps-3">
@@ -88,16 +86,16 @@
             <form th:if="${classSession.status.name() != 'IN_PROGRESS'}"
               th:action="@{/teacher/sessions/{id}/start(id=${classSession.id})}" method="post">
               <button type="submit" class="btn btn-warning btn-lg w-100">
-                <i class="fas fa-play me-2"></i> Bắt đầu lớp học
+                Bắt đầu lớp học
               </button>
             </form>
 
             <button class="btn btn-primary btn-lg" id="regenerateBtn">
-              <i class="fas fa-sync-alt me-2"></i> Cập nhật Vị trí
+              Cập nhật Vị trí
             </button>
 
             <a th:href="@{/teacher/sessions/{id}/attendance(id=${classSession.id})}" class="btn btn-success btn-lg">
-              <i class="fas fa-users me-2"></i> Xem Danh Sách
+              Xem Danh Sách
             </a>
           </div>
 
