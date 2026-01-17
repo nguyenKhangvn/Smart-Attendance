@@ -19,6 +19,8 @@ public interface IUserService extends UserDetailsService {
 
     Optional<User> findByUsername(String username);
 
+    Optional<User> findByStudentCode(String studentCode);
+
     Optional<User> findById(Long id);
 
     List<User> getAllUsers();

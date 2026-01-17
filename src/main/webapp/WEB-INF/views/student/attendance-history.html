@@ -9,222 +9,224 @@
 
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid py-4">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="container-fluid py-4 px-4">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
                 <div>
-                    <h2 class="mb-2"><i class="fas fa-history me-2 text-primary"></i>Lịch sử điểm danh</h2>
-                    <p class="text-muted mb-0">Xem lại toàn bộ lịch sử điểm danh của bạn</p>
+                    <h1 class="h3 mb-0 text-gray-800 fw-bold">Lịch sử điểm danh</h1>
+                    <p class="text-muted mt-1 mb-0 small">Theo dõi quá trình tham gia lớp học của bạn</p>
                 </div>
-                <div>
-                    <button class="btn btn-success shadow-sm" onclick="exportToExcel()">
-                        <i class="fas fa-file-excel me-2"></i>Xuất Excel
-                    </button>
-                </div>
+                <button class="btn btn-primary btn-sm shadow-sm rounded-pill px-3" onclick="exportToExcel()">
+                    <i class="fas fa-download fa-sm text-white-50 me-2"></i>Xuất báo cáo
+                </button>
             </div>
 
-            <!-- Statistics Cards -->
             <div class="row g-4 mb-4">
-                <div class="col-md-3 col-sm-6">
-                    <div class="card border-primary h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-calendar-check fa-2x text-primary mb-3"></i>
-                            <h3 class="text-primary mb-2" th:text="${recordsPage.totalElements}">0</h3>
-                            <p class="text-muted mb-0 fw-semibold">Tổng buổi học</p>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="stats-card-body">
+                            <div class="stats-info">
+                                <p class="text-label-primary">Tổng buổi học</p>
+                                <h3 th:text="${recordsPage.totalElements}">0</h3>
+                            </div>
+                            <div class="icon-circle icon-primary">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card border-success h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-user-check fa-2x text-success mb-3"></i>
-                            <h3 class="text-success mb-2"
-                                th:text="${#lists.size(recordsPage.content.?[status.name() == 'SUCCESS'])}">0
-                            </h3>
-                            <p class="text-muted mb-0 fw-semibold">Có mặt</p>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="stats-card-body">
+                            <div class="stats-info">
+                                <p class="text-label-success">Có mặt</p>
+                                <h3 th:text="${#lists.size(recordsPage.content.?[status.name() == 'SUCCESS'])}">0</h3>
+                            </div>
+                            <div class="icon-circle icon-success">
+                                <i class="fas fa-check"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card border-warning h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-clock fa-2x text-warning mb-3"></i>
-                            <h3 class="text-warning mb-2"
-                                th:text="${#lists.size(recordsPage.content.?[status.name() == 'LATE'])}">0</h3>
-                            <p class="text-muted mb-0 fw-semibold">Đi muộn</p>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="stats-card-body">
+                            <div class="stats-info">
+                                <p class="text-label-warning">Đi muộn</p>
+                                <h3 th:text="${#lists.size(recordsPage.content.?[status.name() == 'LATE'])}">0</h3>
+                            </div>
+                            <div class="icon-circle icon-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <div class="card border-danger h-100">
-                        <div class="card-body text-center">
-                            <i class="fas fa-user-times fa-2x text-danger mb-3"></i>
-                            <h3 class="text-danger mb-2"
-                                th:text="${#lists.size(recordsPage.content.?[status.name() == 'ABSENT'])}">0</h3>
-                            <p class="text-muted mb-0 fw-semibold">Vắng</p>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card h-100">
+                        <div class="stats-card-body">
+                            <div class="stats-info">
+                                <p class="text-label-danger">Vắng mặt</p>
+                                <h3 th:text="${#lists.size(recordsPage.content.?[status.name() == 'ABSENT'])}">0</h3>
+                            </div>
+                            <div class="icon-circle icon-danger">
+                                <i class="fas fa-times"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Attendance Records -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-light border-bottom">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Chi tiết điểm danh</h5>
-                        <div class="input-group" style="max-width: 300px;">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="fas fa-search text-muted"></i>
-                            </span>
-                            <input type="text" id="searchInput" class="form-control border-start-0 ps-0"
-                                placeholder="Tìm kiếm môn học, lớp...">
-                        </div>
+            <div class="card mb-4">
+                <div class="card-header d-flex flex-row align-items-center justify-content-between bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-table me-2"></i>Chi tiết các buổi học
+                    </h6>
+                    
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="form-control search-input"
+                               placeholder="Tìm môn học, lớp...">
                     </div>
                 </div>
-                <div class="card-body">
+
+                <div class="card-body px-0 pt-0">
                     <div class="table-responsive">
-                        <table class="table table-hover" id="attendanceTable">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0" id="attendanceTable">
+                            <thead class="bg-light">
                                 <tr>
-                                    <th>#</th>
-                                    <th>Ngày</th>
-                                    <th>Mã lớp</th>
-                                    <th>Môn học</th>
-                                    <th>Buổi học</th>
-                                    <th>Giờ điểm danh</th>
-                                    <th>Trạng thái</th>
-                                    <th>IP Address</th>
+                                    <th class="ps-4" style="width: 5%;">#</th>
+                                    <th style="width: 25%;">Lớp học / Môn học</th>
+                                    <th style="width: 20%;">Thời gian</th>
+                                    <th style="width: 15%;">Buổi học</th>
+                                    <th style="width: 15%;" class="text-center">Trạng thái</th>
+                                    <th style="width: 20%;">Thiết bị / IP</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="record, iterStat : ${records}">
-                                    <td th:text="${iterStat.count}">1</td>
-                                    <td th:text="${#temporals.format(record.checkedInAt, 'dd/MM/yyyy')}">01/01/2024</td>
-                                    <td th:text="${record.session.classEntity.classCode}">CS101</td>
-                                    <td th:text="${record.session.classEntity.subjectName}">Subject</td>
-                                    <td th:text="${record.session.sessionName}">Session</td>
-                                    <td th:text="${#temporals.format(record.checkedInAt, 'HH:mm:ss')}">10:00:00</td>
+                                    <td class="ps-4 fw-bold text-muted" 
+                                        th:text="${(recordsPage.number * recordsPage.size) + iterStat.count}">1</td>
+                                    
                                     <td>
-                                        <span th:if="${record.status.name() == 'SUCCESS'}" class="badge bg-success">
-                                            <i class="fas fa-check"></i> Có mặt
-                                        </span>
-                                        <span th:if="${record.status.name() == 'LATE'}" class="badge bg-warning">
-                                            <i class="fas fa-clock"></i> Muộn
-                                        </span>
-                                        <span th:if="${record.status.name() == 'ABSENT'}" class="badge bg-danger">
-                                            <i class="fas fa-times"></i> Vắng
-                                        </span>
-                                        <span th:if="${record.status.name() == 'FAILED_DISTANCE'}"
-                                            class="badge bg-secondary">
-                                            <i class="fas fa-map-marker-alt"></i> Quá xa
-                                        </span>
-                                        <span th:if="${record.status.name() == 'FAILED_INVALID_QR'}"
-                                            class="badge bg-dark">
-                                            <i class="fas fa-qrcode"></i> QR sai
-                                        </span>
-                                        <span th:if="${record.status.name() == 'FAILED_DUPLICATE_DEVICE'}"
-                                            class="badge bg-info">
-                                            <i class="fas fa-mobile-alt"></i> Device trùng
-                                        </span>
-                                        <span th:if="${record.status.name() == 'FAILED_ALREADY_CHECKED'}"
-                                            class="badge bg-warning">
-                                            <i class="fas fa-check-circle"></i> Đã điểm danh
-                                        </span>
-                                        <span th:if="${record.status.name() == 'FAILED_FACE_VERIFICATION'}"
-                                            class="badge bg-danger">
-                                            <i class="fas fa-user-times"></i> Face fail
-                                        </span>
-                                        <span th:if="${record.status.name() == 'PENDING_REVIEW'}"
-                                            class="badge bg-warning">
-                                            <i class="fas fa-clock"></i> Chờ duyệt
-                                        </span>
-                                        <span th:if="${record.status.name() == 'GPS_POOR_SIGNAL'}"
-                                            class="badge bg-warning">
-                                            <i class="fas fa-satellite-dish"></i> GPS yếu
+                                        <div class="d-flex flex-column">
+                                            <a th:href="@{/student/classes/{id}(id=${record.session.classEntity.id})}"
+                                               class="subject-title mb-1">
+                                                <span th:text="${record.session.classEntity.classCode}">CODE</span>
+                                            </a>
+                                            <span class="subject-subtitle" 
+                                                  th:text="${record.session.classEntity.subjectName}">Subject Name</span>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded p-2 me-2 text-center" style="min-width: 50px;">
+                                                <span class="d-block small fw-bold text-dark" 
+                                                      th:text="${#temporals.format(record.checkedInAt, 'dd')}">01</span>
+                                                <span class="d-block small text-muted" style="font-size: 0.7rem;"
+                                                      th:text="${#temporals.format(record.checkedInAt, 'MMM')}">JAN</span>
+                                            </div>
+                                            <div>
+                                                <span class="d-block fw-bold text-dark" style="font-size: 0.9rem;"
+                                                      th:text="${#temporals.format(record.checkedInAt, 'HH:mm')}"></span>
+                                                <span class="small text-muted" 
+                                                      th:text="${#temporals.format(record.checkedInAt, 'EEEE')}">Monday</span>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-light text-secondary border">
+                                            <span th:text="${record.session.sessionName}">Session 1</span>
                                         </span>
                                     </td>
-                                    <td th:text="${record.ipAddress ?: '--'}">--</td>
+
+                                    <td class="text-center">
+                                        <span th:if="${record.status.name() == 'SUCCESS'}" class="status-badge badge-soft-success">
+                                            <i class="fas fa-check-circle"></i> Có mặt
+                                        </span>
+                                        <span th:if="${record.status.name() == 'LATE'}" class="status-badge badge-soft-warning">
+                                            <i class="fas fa-clock"></i> Đi muộn
+                                        </span>
+                                        <span th:if="${record.status.name() == 'ABSENT'}" class="status-badge badge-soft-danger">
+                                            <i class="fas fa-times-circle"></i> Vắng
+                                        </span>
+                                        <span th:if="${record.status.name() == 'FAILED_DISTANCE'}" class="status-badge badge-soft-secondary">
+                                            <i class="fas fa-map-marker-alt"></i> Sai vị trí
+                                        </span>
+                                        <span th:if="${record.status.name() == 'FAILED_FACE_VERIFICATION'}" class="status-badge badge-soft-danger">
+                                            <i class="fas fa-user-slash"></i> Sai khuôn mặt
+                                        </span>
+                                        <span th:if="${record.status.name() == 'PENDING_REVIEW'}" class="status-badge badge-soft-warning">
+                                            <i class="fas fa-hourglass"></i> Chờ duyệt
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <div class="small text-muted">
+                                            <i class="fas fa-globe me-1"></i> <span th:text="${record.ipAddress ?: 'N/A'}"></span>
+                                        </div>
+                                        <div class="small text-muted mt-1 fst-italic" th:if="${record.note}">
+                                            <i class="fas fa-sticky-note me-1"></i> <span th:text="${record.note}"></span>
+                                        </div>
+                                    </td>
                                 </tr>
+                                
                                 <tr th:if="${records.isEmpty()}">
-                                    <td colspan="8" class="text-center text-muted py-5">
-                                        <i class="fas fa-inbox fa-3x mb-3 d-block text-secondary opacity-50"></i>
-                                        <p class="mb-0">Chưa có dữ liệu điểm danh</p>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="py-4">
+                                            <i class="fas fa-clipboard-list text-gray-300 mb-3" style="font-size: 3rem; color: #e3e6f0;"></i>
+                                            <p class="text-muted mb-0">Chưa có dữ liệu điểm danh nào.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    
+                    <div class="card-footer bg-white border-0 py-3 d-flex flex-wrap align-items-center justify-content-between" 
+                         th:if="${!recordsPage.empty}">
+                        
+                        <div class="small text-muted mb-2 mb-md-0">
+                             Hiển thị <span class="fw-bold text-dark" th:text="${(recordsPage.number * recordsPage.size) + 1}"></span> 
+                             đến <span class="fw-bold text-dark" th:text="${(recordsPage.number * recordsPage.size) + recordsPage.numberOfElements}"></span> 
+                             của <span class="fw-bold text-dark" th:text="${recordsPage.totalElements}"></span> kết quả
+                        </div>
 
-                    <!-- Pagination -->
-                    <div th:if="${!recordsPage.empty}" class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
-                        <!-- Page Size Selector -->
-                        <div class="d-flex align-items-center gap-2">
-                            <label class="mb-0 text-muted fw-semibold">Hiển thị:</label>
-                            <select class="form-select form-select-sm shadow-sm" style="width: auto;"
+                        <div class="d-flex align-items-center">
+                            <select class="form-select form-select-sm me-3 border-0 bg-light" style="width: auto; cursor: pointer;"
                                 onchange="changePageSize(this.value)">
-                                <option th:value="5" th:selected="${pageSize == 5}">5</option>
-                                <option th:value="10" th:selected="${pageSize == 10}">10</option>
-                                <option th:value="25" th:selected="${pageSize == 25}">25</option>
-                                <option th:value="50" th:selected="${pageSize == 50}">50</option>
+                                <option th:value="5" th:selected="${pageSize == 5}">5 / trang</option>
+                                <option th:value="10" th:selected="${pageSize == 10}">10 / trang</option>
+                                <option th:value="20" th:selected="${pageSize == 20}">20 / trang</option>
                             </select>
-                            <span class="text-muted">dòng</span>
+
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" th:classappend="${!recordsPage.hasPrevious()} ? 'disabled'">
+                                        <a class="page-link" th:href="${recordsPage.hasPrevious()} ? @{'/student/attendance-history'(page=${recordsPage.number - 1}, size=${pageSize})} : '#'">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    
+                                    <li class="page-item active">
+                                        <span class="page-link" th:text="${recordsPage.number + 1}">1</span>
+                                    </li>
+
+                                    <li class="page-item" th:classappend="${!recordsPage.hasNext()} ? 'disabled'">
+                                        <a class="page-link" th:href="${recordsPage.hasNext()} ? @{'/student/attendance-history'(page=${recordsPage.number + 1}, size=${pageSize})} : '#'">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
-
-                        <!-- Pagination Info -->
-                        <div class="text-muted">
-                            <span
-                                th:text="'Hiển thị ' + ${recordsPage.number * recordsPage.size + 1} + ' - ' + ${recordsPage.number * recordsPage.size + recordsPage.numberOfElements} + ' / ' + ${recordsPage.totalElements} + ' kết quả'"></span>
-                        </div>
-
-                        <!-- Pagination Controls -->
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination pagination-sm mb-0">
-                                <!-- Previous Button -->
-                                <li class="page-item" th:classappend="${recordsPage.hasPrevious()} ? '' : 'disabled'">
-                                    <a class="page-link shadow-sm"
-                                        th:href="${recordsPage.hasPrevious()} ? @{'/student/attendance-history'(page=${recordsPage.number - 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
-                                        th:aria-disabled="${!recordsPage.hasPrevious()}">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </a>
-                                </li>
-
-                                <!-- Page Numbers -->
-                                <li th:each="pageNum : ${#numbers.sequence(0, recordsPage.totalPages - 1)}"
-                                    class="page-item" th:classappend="${pageNum == recordsPage.number} ? 'active' : ''">
-                                    <a class="page-link shadow-sm"
-                                        th:href="@{'/student/attendance-history'(page=${pageNum}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})}"
-                                        th:text="${pageNum + 1}">1</a>
-                                </li>
-
-                                <!-- Next Button -->
-                                <li class="page-item" th:classappend="${recordsPage.hasNext()} ? '' : 'disabled'">
-                                    <a class="page-link shadow-sm"
-                                        th:href="${recordsPage.hasNext()} ? @{'/student/attendance-history'(page=${recordsPage.number + 1}, size=${pageSize}, sortBy=${sortBy}, sortDir=${sortDir})} : '#'"
-                                        th:aria-disabled="${!recordsPage.hasNext()}">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <th:block layout:fragment="scripts">
-        <script th:src="@{/js/student/attendance-history.js}"></script>
-        <script th:inline="javascript">
-            /*<![CDATA[*/
-            function changePageSize(newSize) {
-                const url = new URL(window.location);
-                url.searchParams.set('size', newSize);
-                url.searchParams.set('page', '0'); // Reset to first page
-                window.location.href = url.toString();
-            }
-            /*]]>*/
-        </script>
-    </th:block>
 </body>
-
 </html>

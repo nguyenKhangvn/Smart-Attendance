@@ -14,9 +14,14 @@
             <main class="col-md-10 p-4">
                 <div class="d-flex justify-content-between mb-3">
                     <h2><i class="fas fa-user-graduate me-2"></i>Quản lý Học Sinh</h2>
-                    <a th:href="@{/admin/students/create}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Thêm mới
-                    </a>
+                    <div>
+                        <a th:href="@{/admin/students/create}" class="btn btn-primary me-2">
+                            <i class="fas fa-plus"></i> Thêm mới
+                        </a>
+                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                            <i class="fas fa-file-excel"></i> Import Excel
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ALERT -->
@@ -143,6 +148,48 @@
                     <div class="modal-footer">
                         <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                         <button class="btn btn-danger" type="submit">Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Excel Modal -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/admin/students/import-excel}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import danh sách học sinh từ Excel</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Định dạng file Excel:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Cột A: Mã sinh viên (bắt buộc)</li>
+                                <li>Cột B: Username (bắt buộc)</li>
+                                <li>Cột C: Họ tên (bắt buộc)</li>
+                                <li>Cột D: Email (bắt buộc)</li>
+                                <li>Cột E: Số điện thoại</li>
+                                <li>Cột F: Mật khẩu mặc định (nếu để trống sẽ dùng: 123456)</li>
+                            </ul>
+                            <a href="/SmartAttendance/templates/student-template.xlsx" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-download"></i> Tải file mẫu
+                            </a>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Chọn file Excel</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Import
+                        </button>
                     </div>
                 </form>
             </div>

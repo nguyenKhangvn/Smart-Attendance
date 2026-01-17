@@ -23,83 +23,83 @@ import java.util.List;
 @RequestMapping("/student")
 public class StudentController {
 
-    @Autowired
-    private IClassService classService;
+        @Autowired
+        private IClassService classService;
 
-    @Autowired
-    private IAttendanceService attendanceService;
+        @Autowired
+        private IAttendanceService attendanceService;
 
-    @Autowired
-    private IUserService userService;
+        @Autowired
+        private IUserService userService;
 
-    @Autowired
-    private PaginationService paginationService;
+        @Autowired
+        private PaginationService paginationService;
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        @GetMapping("/dashboard")
+        public String dashboard(Model model, Authentication authentication) {
+                User student = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
+                List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
 
-        model.addAttribute("student", student);
-        model.addAttribute("classes", classes);
+                model.addAttribute("student", student);
+                model.addAttribute("classes", classes);
 
-        return "student/dashboard";
-    }
+                return "student/dashboard";
+        }
 
-    @GetMapping("/classes")
-    public String listClasses(Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        @GetMapping("/classes")
+        public String listClasses(Model model, Authentication authentication) {
+                User student = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
+                List<ClassEntity> classes = classService.getClassesByStudent(student.getId());
 
-        model.addAttribute("classes", classes);
+                model.addAttribute("classes", classes);
 
-        return "student/classes";
-    }
+                return "student/classes";
+        }
 
-    @GetMapping("/classes/{id}")
-    public String viewClass(@PathVariable Long id, Model model, Authentication authentication) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        @GetMapping("/classes/{id}")
+        public String viewClass(@PathVariable Long id, Model model, Authentication authentication) {
+                User student = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        ClassEntity classEntity = classService.findByIdWithTeacher(id)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
+                ClassEntity classEntity = classService.findByIdWithTeacher(id)
+                                .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        List<AttendanceRecord> attendanceRecords = attendanceService.getStudentAttendance(student.getId(), id);
+                List<AttendanceRecord> attendanceRecords = attendanceService.getStudentAttendance(student.getId(), id);
 
-        model.addAttribute("classEntity", classEntity);
-        model.addAttribute("attendanceRecords", attendanceRecords);
+                model.addAttribute("classEntity", classEntity);
+                model.addAttribute("attendanceRecords", attendanceRecords);
 
-        return "student/class-detail";
-    }
+                return "student/class-detail";
+        }
 
-    @GetMapping("/scan-qr")
-    public String scanQR(Model model) {
-        return "student/scan-qr";
-    }
+        @GetMapping("/scan-qr")
+        public String scanQR(Model model) {
+                return "student/scan-qr";
+        }
 
-    @GetMapping("/attendance-history")
-    public String attendanceHistory(Model model, Authentication authentication,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "checkedInAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-        User student = userService.findByUsername(authentication.getName())
-                .orElseThrow(() -> new RuntimeException("Student not found"));
+        @GetMapping("/attendance-history")
+        public String attendanceHistory(Model model, Authentication authentication,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "checkedInAt") String sortBy,
+                        @RequestParam(defaultValue = "desc") String sortDir) {
+                User student = userService.findByUsername(authentication.getName())
+                                .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        Page<AttendanceRecord> recordsPage = attendanceService.getStudentAttendancePage(student.getId(), null,
-                paginationService.createPageable(page, size, sortBy, sortDir));
+                Page<AttendanceRecord> recordsPage = attendanceService.getStudentAttendancePage(student.getId(), null,
+                                paginationService.createPageable(page, size, sortBy, sortDir));
 
-        model.addAttribute("recordsPage", recordsPage);
-        model.addAttribute("records", recordsPage.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("sortDir", sortDir);
+                model.addAttribute("recordsPage", recordsPage);
+                model.addAttribute("records", recordsPage.getContent());
+                model.addAttribute("currentPage", page);
+                model.addAttribute("pageSize", size);
+                model.addAttribute("sortBy", sortBy);
+                model.addAttribute("sortDir", sortDir);
 
-        return "student/attendance-history";
-    }
+                return "student/attendance-history";
+        }
 }

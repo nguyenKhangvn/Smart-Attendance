@@ -4,15 +4,17 @@
 
 <head>
     <title>Chi tiết lớp học - Sinh viên</title>
+    <!-- Page specific CSS -->
+    <link th:href="@{/resources/css/student/class-detail.css}" rel="stylesheet">
 </head>
 
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
+        <div class="container-fluid py-4">
             <!-- Header -->
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="mb-1" th:text="${classEntity.classCode}">Class Code</h2>
+                    <h2 class="mb-1 fw-bold text-dark" th:text="${classEntity.classCode}">Class Code</h2>
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item"><a th:href="@{/student/dashboard}">Dashboard</a></li>
@@ -23,94 +25,102 @@
                     </nav>
                 </div>
                 <div>
-                    <a th:href="@{/student/classes}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Quay lại
+                    <a th:href="@{/student/classes}" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i> Quay lại
                     </a>
                 </div>
             </div>
 
             <!-- Class Info Card -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin lớp học</h5>
+            <div class="card mb-4 info-card">
+                <div class="card-header text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i> Thông tin lớp học</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <p class="mb-2"><strong>Mã lớp:</strong> <span th:text="${classEntity.classCode}"></span>
-                            </p>
-                            <p class="mb-2"><strong>Môn học:</strong> <span th:text="${classEntity.subjectName}"></span>
-                            </p>
-                            <p class="mb-2"><strong>Học kỳ:</strong> <span th:text="${classEntity.semester}"></span></p>
+                            <div class="info-item">
+                                <strong>Mã lớp:</strong> <span th:text="${classEntity.classCode}"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Môn học:</strong> <span th:text="${classEntity.subjectName}"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Học kỳ:</strong> <span th:text="${classEntity.semester}"></span>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <p class="mb-2"><strong>Giảng viên:</strong> <span
-                                    th:text="${classEntity.teacher.fullName}"></span></p>
-                            <p class="mb-2"><strong>Email GV:</strong> <span
-                                    th:text="${classEntity.teacher.email}"></span></p>
-                            <p class="mb-2"><strong>Lịch học:</strong> <span
-                                    th:text="${classEntity.scheduleInfo}"></span></p>
+                            <div class="info-item">
+                                <strong>Giảng viên:</strong> <span th:text="${classEntity.teacher.fullName}"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Email GV:</strong> <span th:text="${classEntity.teacher.email}"></span>
+                            </div>
+                            <div class="info-item">
+                                <strong>Lịch học:</strong> <span th:text="${classEntity.scheduleInfo}"></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="row mt-2" th:if="${classEntity.description}">
+                    <div class="row mt-3" th:if="${classEntity.description}">
                         <div class="col-12">
-                            <p class="mb-0"><strong>Mô tả:</strong> <span th:text="${classEntity.description}"></span>
-                            </p>
+                            <div class="info-item">
+                                <strong>Mô tả:</strong> <span th:text="${classEntity.description}"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Attendance Statistics -->
-            <div class="row mb-4">
+            <div class="row mb-4 g-4">
                 <div class="col-md-3">
-                    <div class="card border-primary">
+                    <div class="card stat-card total">
                         <div class="card-body text-center">
-                            <h3 class="text-primary mb-2" th:text="${attendanceRecords.size()}">0</h3>
-                            <p class="text-muted mb-0">Tổng buổi đã điểm danh</p>
+                            <h3 class="stat-value" th:text="${attendanceRecords.size()}">0</h3>
+                            <p class="stat-label">Tổng buổi đã điểm danh</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-success">
+                    <div class="card stat-card present">
                         <div class="card-body text-center">
-                            <h3 class="text-success mb-2"
-                                th:text="${#lists.size(attendanceRecords.?[status == 'PRESENT'])}">0</h3>
-                            <p class="text-muted mb-0">Có mặt đúng giờ</p>
+                            <h3 class="stat-value" th:text="${#lists.size(attendanceRecords.?[status == 'PRESENT'])}">0
+                            </h3>
+                            <p class="stat-label">Có mặt đúng giờ</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-warning">
+                    <div class="card stat-card late">
                         <div class="card-body text-center">
-                            <h3 class="text-warning mb-2"
-                                th:text="${#lists.size(attendanceRecords.?[status == 'LATE'])}">0</h3>
-                            <p class="text-muted mb-0">Đi muộn</p>
+                            <h3 class="stat-value" th:text="${#lists.size(attendanceRecords.?[status == 'LATE'])}">0
+                            </h3>
+                            <p class="stat-label">Đi muộn</p>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card border-danger">
+                    <div class="card stat-card absent">
                         <div class="card-body text-center">
-                            <h3 class="text-danger mb-2"
-                                th:text="${#lists.size(attendanceRecords.?[status == 'ABSENT'])}">0</h3>
-                            <p class="text-muted mb-0">Vắng</p>
+                            <h3 class="stat-value" th:text="${#lists.size(attendanceRecords.?[status == 'ABSENT'])}">0
+                            </h3>
+                            <p class="stat-label">Vắng</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Attendance History -->
-            <div class="card">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="fas fa-history"></i> Lịch sử điểm danh</h5>
+            <div class="card history-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i> Lịch sử điểm danh</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
+                        <table class="table table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th class="ps-4">#</th>
                                     <th>Ngày</th>
                                     <th>Buổi học</th>
                                     <th>Thời gian điểm danh</th>
@@ -120,25 +130,28 @@
                             </thead>
                             <tbody>
                                 <tr th:each="record, iterStat : ${attendanceRecords}">
-                                    <td th:text="${iterStat.count}">1</td>
+                                    <td class="ps-4" th:text="${iterStat.count}">1</td>
                                     <td th:text="${#temporals.format(record.checkedInAt, 'dd/MM/yyyy')}">01/01/2024</td>
                                     <td th:text="${record.session.sessionName}">Session Name</td>
                                     <td th:text="${#temporals.format(record.checkedInAt, 'HH:mm:ss')}">10:00:00</td>
                                     <td>
-                                        <span th:if="${record.status == 'PRESENT'}" class="badge bg-success">
-                                            <i class="fas fa-check"></i> Có mặt
+                                        <span th:if="${record.status == 'PRESENT'}" class="status-badge present">
+                                            <i class="fas fa-check-circle"></i> Có mặt
                                         </span>
-                                        <span th:if="${record.status == 'LATE'}" class="badge bg-warning">
-                                            <i class="fas fa-clock"></i> Muộn
+                                        <span th:if="${record.status == 'LATE'}" class="status-badge late">
+                                            <i class="fas fa-exclamation-circle"></i> Muộn
                                         </span>
-                                        <span th:if="${record.status == 'ABSENT'}" class="badge bg-danger">
-                                            <i class="fas fa-times"></i> Vắng
+                                        <span th:if="${record.status == 'ABSENT'}" class="status-badge absent">
+                                            <i class="fas fa-times-circle"></i> Vắng
                                         </span>
                                     </td>
                                     <td th:text="${record.notes ?: '--'}">--</td>
                                 </tr>
                                 <tr th:if="${attendanceRecords.isEmpty()}">
-                                    <td colspan="6" class="text-center text-muted">Chưa có dữ liệu điểm danh</td>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-3x mb-3 text-secondary d-block"></i>
+                                        Chưa có dữ liệu điểm danh
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

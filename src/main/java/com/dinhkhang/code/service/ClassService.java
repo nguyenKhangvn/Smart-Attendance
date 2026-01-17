@@ -89,7 +89,8 @@ public class ClassService implements IClassService {
         ClassEntity classEntity = classRepository.findByIdWithTeacher(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        // classEntity.getStudents().size(); // Đã được fetch eagerly trong findByIdWithTeacher
+        // classEntity.getStudents().size(); // Đã được fetch eagerly trong
+        // findByIdWithTeacher
 
         return classEntity;
     }

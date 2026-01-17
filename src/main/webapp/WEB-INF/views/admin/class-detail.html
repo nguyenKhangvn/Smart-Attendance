@@ -85,25 +85,73 @@
                         <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Thêm học sinh vào lớp</h5>
                     </div>
                     <div class="card-body">
-                        <form th:action="@{/admin/classes/{id}/add-student(id=${classEntity.id})}" method="post"
-                            class="row g-3">
-                            <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                            <div class="col-md-8">
-                                <label class="form-label">Chọn học sinh</label>
-                                <select name="studentId" class="form-select" required>
-                                    <option value="">-- Chọn học sinh --</option>
-                                    <option th:each="student : ${availableStudents}" th:value="${student.id}"
-                                        th:text="${student.studentCode + ' - ' + student.fullName}"></option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-plus me-2"></i>Thêm vào lớp
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#addSingle"
+                                    type="button">
+                                    <i class="fas fa-user"></i> Thêm từng người
                                 </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#addExcel" type="button">
+                                    <i class="fas fa-file-excel"></i> Import Excel
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <!-- Single Add Tab -->
+                            <div class="tab-pane fade show active" id="addSingle">
+                                <form th:action="@{/admin/classes/{id}/add-student(id=${classEntity.id})}" method="post"
+                                    class="row g-3">
+                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                    <div class="col-md-8">
+                                        <label class="form-label">Chọn học sinh</label>
+                                        <select name="studentId" class="form-select" required>
+                                            <option value="">-- Chọn học sinh --</option>
+                                            <option th:each="student : ${availableStudents}" th:value="${student.id}"
+                                                th:text="${student.studentCode + ' - ' + student.fullName}"></option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-success w-100">
+                                            <i class="fas fa-plus me-2"></i>Thêm vào lớp
+                                        </button>
+                                    </div>
+                                </form>
+                                <div th:if="${availableStudents.empty}" class="text-muted mt-2">
+                                    <i class="fas fa-info-circle me-1"></i>Không có học sinh nào khả dụng để thêm.
+                                </div>
                             </div>
-                        </form>
-                        <div th:if="${availableStudents.empty}" class="text-muted mt-2">
-                            <i class="fas fa-info-circle me-1"></i>Không có học sinh nào khả dụng để thêm.
+
+                            <!-- Excel Import Tab -->
+                            <div class="tab-pane fade" id="addExcel">
+                                <form th:action="@{/admin/classes/{classId}/import-students(classId=${classEntity.id})}"
+                                    method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Định dạng file Excel:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Cột A: Mã sinh viên (bắt buộc)</li>
+                                        </ul>
+                                        <small class="text-muted">Hệ thống sẽ tự động tìm và thêm sinh viên theo mã sinh
+                                            viên</small>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Chọn file Excel</label>
+                                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls"
+                                                required>
+                                        </div>
+                                        <div class="col-md-4 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-success w-100">
+                                                <i class="fas fa-upload me-2"></i>Import
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

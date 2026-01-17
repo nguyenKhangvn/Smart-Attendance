@@ -29,20 +29,33 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
                         @Param("classSession") ClassSession classSession,
                         @Param("deviceUid") String deviceUid);
 
-        @Query("SELECT a FROM AttendanceRecord a WHERE a.student = :student " +
+        @Query("SELECT DISTINCT a FROM AttendanceRecord a " +
+                        "JOIN FETCH a.classSession cs " +
+                        "JOIN FETCH cs.classEntity c " +
+                        "WHERE a.student = :student " +
                         "AND a.classSession.classEntity.id = :classId " +
                         "ORDER BY a.checkedInAt DESC")
         List<AttendanceRecord> findByStudentAndClassId(
                         @Param("student") User student,
                         @Param("classId") Long classId);
 
-        @Query("SELECT a FROM AttendanceRecord a WHERE a.student = :student " +
-                        "AND (:classId IS NULL OR a.classSession.classEntity.id = :classId) " +
-                        "ORDER BY a.checkedInAt DESC")
+        @Query(value = "SELECT DISTINCT a FROM AttendanceRecord a " +
+                        "JOIN FETCH a.classSession cs " +
+                        "JOIN FETCH cs.classEntity c " +
+                        "WHERE a.student = :student " +
+                        "AND (:classId IS NULL OR cs.classEntity.id = :classId)", countQuery = "SELECT COUNT(a) FROM AttendanceRecord a "
+                                        +
+                                        "WHERE a.student = :student " +
+                                        "AND (:classId IS NULL OR a.classSession.classEntity.id = :classId)")
         Page<AttendanceRecord> findByStudentAndClassId(
                         @Param("student") User student,
                         @Param("classId") Long classId,
                         Pageable pageable);
+
+        @Query("SELECT DISTINCT a FROM AttendanceRecord a " +
+                        "JOIN FETCH a.student s " +
+                        "WHERE a.classSession.id = :sessionId")
+        List<AttendanceRecord> findByClassSessionIdWithDetails(@Param("sessionId") Long sessionId);
 
         @Query("SELECT COUNT(a) FROM AttendanceRecord a WHERE a.classSession = :classSession " +
                         "AND a.status = com.dinhkhang.code.entity.AttendanceRecord$AttendanceStatus.SUCCESS")
@@ -55,16 +68,4 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
                         @Param("status") AttendanceRecord.AttendanceStatus status);
 
         boolean existsByStudentAndClassSession(User student, ClassSession classSession);
-
-        /**
-         * Query with JOIN FETCH to avoid LazyInitializationException
-         * Load all necessary relationships in one query
-         */
-        @Query("SELECT a FROM AttendanceRecord a " +
-                        "LEFT JOIN FETCH a.student s " +
-                        "LEFT JOIN FETCH a.classSession cs " +
-                        "LEFT JOIN FETCH cs.classEntity ce " +
-                        "WHERE cs.id = :sessionId " +
-                        "ORDER BY s.studentCode ASC")
-        List<AttendanceRecord> findByClassSessionIdWithDetails(@Param("sessionId") Long sessionId);
 }

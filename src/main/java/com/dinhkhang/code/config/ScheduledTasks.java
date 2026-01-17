@@ -7,8 +7,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Scheduled tasks for system maintenance
@@ -21,6 +23,14 @@ public class ScheduledTasks {
     @Autowired
     private QRSessionRepository qrSessionRepository;
 
+    private final AtomicBoolean isShuttingDown = new AtomicBoolean(false);
+
+    @PreDestroy
+    public void onShutdown() {
+        isShuttingDown.set(true);
+        System.out.println("[SCHEDULED TASKS] Shutdown initiated, stopping scheduled tasks...");
+    }
+
     /**
      * Run every minute to deactivate expired QR sessions
      * Đảm bảo QR hết hạn không thể dùng để điểm danh
@@ -28,17 +38,27 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 60000) // Every 60 seconds
     @Transactional
     public void deactivateExpiredQRSessions() {
-        LocalDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();
+        if (isShuttingDown.get()) {
+            return; // Skip execution during shutdown
+        }
 
-        List<QRSession> allActive = qrSessionRepository.findAll().stream()
-                .filter(qr -> qr.getIsActive() && qr.getExpiredAt().isBefore(now))
-                .toList();
+        try {
+            LocalDateTime now = java.time.ZonedDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDateTime();
 
-        if (!allActive.isEmpty()) {
-            allActive.forEach(qr -> qr.setIsActive(false));
-            qrSessionRepository.saveAll(allActive);
+            List<QRSession> allActive = qrSessionRepository.findAll().stream()
+                    .filter(qr -> qr.getIsActive() && qr.getExpiredAt().isBefore(now))
+                    .toList();
 
-            System.out.println("[SCHEDULED] Deactivated " + allActive.size() + " expired QR sessions");
+            if (!allActive.isEmpty()) {
+                allActive.forEach(qr -> qr.setIsActive(false));
+                qrSessionRepository.saveAll(allActive);
+
+                System.out.println("[SCHEDULED] Deactivated " + allActive.size() + " expired QR sessions");
+            }
+        } catch (Exception e) {
+            if (!isShuttingDown.get()) {
+                System.err.println("[SCHEDULED] Error deactivating QR sessions: " + e.getMessage());
+            }
         }
     }
 
@@ -47,10 +67,20 @@ public class ScheduledTasks {
      */
     @Scheduled(fixedRate = 300000) // Every 5 minutes
     public void logSystemHealth() {
-        long activeQRCount = qrSessionRepository.findAll().stream()
-                .filter(qr -> qr.getIsActive() && !qr.isExpired())
-                .count();
+        if (isShuttingDown.get()) {
+            return; // Skip execution during shutdown
+        }
 
-        System.out.println("[HEALTH CHECK] Active QR Sessions: " + activeQRCount);
+        try {
+            long activeQRCount = qrSessionRepository.findAll().stream()
+                    .filter(qr -> qr.getIsActive() && !qr.isExpired())
+                    .count();
+
+            System.out.println("[HEALTH CHECK] Active QR Sessions: " + activeQRCount);
+        } catch (Exception e) {
+            if (!isShuttingDown.get()) {
+                System.err.println("[HEALTH CHECK] Error: " + e.getMessage());
+            }
+        }
     }
 }

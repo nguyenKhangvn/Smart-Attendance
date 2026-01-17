@@ -12,7 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -145,5 +147,151 @@ public class ExcelImportService {
         }
 
         return createdUsers;
+    }
+
+    /**
+     * Import students from Excel file
+     * 
+     * @param file Excel file with columns: StudentCode, FullName, Username, Email,
+     *             PhoneNumber, Password
+     * @return Map with keys: students (List<User>), errors (List<String>),
+     *         successCount (int), errorCount (int)
+     */
+    public Map<String, Object> importStudentsFromExcel(MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        List<User> students = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        int successCount = 0;
+        int errorCount = 0;
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Skip header row (row 0)
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null)
+                    continue;
+
+                try {
+                    User student = new User();
+
+                    // Column 0: Student Code
+                    String studentCode = getCellValueAsString(row.getCell(0));
+                    if (studentCode.isEmpty()) {
+                        errors.add("Dòng " + (i + 1) + ": Thiếu mã sinh viên");
+                        errorCount++;
+                        continue;
+                    }
+                    student.setStudentCode(studentCode);
+
+                    // Column 1: Full Name
+                    String fullName = getCellValueAsString(row.getCell(1));
+                    if (fullName.isEmpty()) {
+                        errors.add("Dòng " + (i + 1) + ": Thiếu họ tên");
+                        errorCount++;
+                        continue;
+                    }
+                    student.setFullName(fullName);
+
+                    // Column 2: Username (Updated from column 4 to 2 based on user file format)
+                    String username = getCellValueAsString(row.getCell(2));
+                    if (username.isEmpty()) {
+                        errors.add("Dòng " + (i + 1) + ": Thiếu username");
+                        errorCount++;
+                        continue;
+                    }
+
+                    // Check if username exists
+                    if (userService.findByUsername(username).isPresent()) {
+                        errors.add("Dòng " + (i + 1) + ": Username '" + username + "' đã tồn tại");
+                        errorCount++;
+                        continue;
+                    }
+                    student.setUsername(username);
+
+                    // Column 3: Email (Updated from column 2 to 3 based on user file format)
+                    String email = getCellValueAsString(row.getCell(3));
+                    if (email.isEmpty()) {
+                        errors.add("Dòng " + (i + 1) + ": Thiếu email");
+                        errorCount++;
+                        continue;
+                    }
+                    student.setEmail(email);
+
+                    // Column 4: Phone Number (Optional, Updated from column 3 to 4)
+                    String phone = getCellValueAsString(row.getCell(4));
+                    student.setPhoneNumber(phone);
+
+                    // Column 5: Password (optional, default: 123456)
+                    String password = getCellValueAsString(row.getCell(5));
+                    if (password.isEmpty()) {
+                        password = "123456";
+                    }
+                    student.setPassword(password);
+
+                    student.setRole(User.Role.STUDENT);
+                    student.setIsActive(true);
+
+                    students.add(student);
+                    successCount++;
+
+                } catch (Exception e) {
+                    errors.add("Dòng " + (i + 1) + ": " + e.getMessage());
+                    errorCount++;
+                }
+            }
+        } catch (IOException e) {
+            errors.add("Lỗi đọc file: " + e.getMessage());
+            errorCount++;
+        }
+
+        result.put("students", students);
+        result.put("errors", errors);
+        result.put("successCount", successCount);
+        result.put("errorCount", errorCount);
+        return result;
+    }
+
+    /**
+     * Import student codes from Excel file for adding to class
+     * 
+     * @param file Excel file with one column: StudentCode
+     * @return Map with keys: studentCodes (List<String>), errors (List<String>)
+     */
+    public Map<String, Object> importStudentCodesFromExcel(MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        List<String> studentCodes = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Skip header row (row 0)
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null)
+                    continue;
+
+                try {
+                    // Column 0: Student Code
+                    String studentCode = getCellValueAsString(row.getCell(0));
+                    if (studentCode.isEmpty()) {
+                        errors.add("Dòng " + (i + 1) + ": Thiếu mã sinh viên");
+                        continue;
+                    }
+                    studentCodes.add(studentCode);
+
+                } catch (Exception e) {
+                    errors.add("Dòng " + (i + 1) + ": " + e.getMessage());
+                }
+            }
+        } catch (IOException e) {
+            errors.add("Lỗi đọc file: " + e.getMessage());
+        }
+
+        result.put("studentCodes", studentCodes);
+        result.put("errors", errors);
+        return result;
     }
 }

@@ -5,6 +5,7 @@ import com.dinhkhang.code.entity.User;
 import com.dinhkhang.code.service.IClassService;
 import com.dinhkhang.code.service.IUserService;
 import com.dinhkhang.code.service.PaginationService;
+import com.dinhkhang.code.service.ExcelImportService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,9 +13,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -29,6 +33,9 @@ public class AdminController {
 
     @Autowired
     private PaginationService paginationService;
+
+    @Autowired
+    private ExcelImportService excelImportService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -247,6 +254,59 @@ public class AdminController {
         return "redirect:/admin/students";
     }
 
+    @PostMapping("/students/import-excel")
+    public String importStudentsFromExcel(@RequestParam("file") MultipartFile file,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (file.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Vui lòng chọn file Excel!");
+                return "redirect:/admin/students";
+            }
+
+            Map<String, Object> result = excelImportService.importStudentsFromExcel(file);
+            @SuppressWarnings("unchecked")
+            List<User> students = (List<User>) result.get("students");
+            @SuppressWarnings("unchecked")
+            List<String> errors = (List<String>) result.get("errors");
+            int successCount = (int) result.get("successCount");
+            int errorCount = (int) result.get("errorCount");
+
+            // Save valid students
+            int savedCount = 0;
+            List<String> saveErrors = new ArrayList<>();
+            for (User student : students) {
+                try {
+                    userService.createUser(student);
+                    savedCount++;
+                } catch (Exception e) {
+                    saveErrors.add("Mã SV " + student.getStudentCode() + ": " + e.getMessage());
+                }
+            }
+
+            // Build result message
+            StringBuilder message = new StringBuilder();
+            message.append("Import hoàn tất! ");
+            message.append("Thành công: ").append(savedCount).append(", ");
+            message.append("Lỗi: ").append(errorCount + saveErrors.size());
+
+            if (!errors.isEmpty() || !saveErrors.isEmpty()) {
+                message.append("\n\nChi tiết lỗi:\n");
+                errors.forEach(err -> message.append("- ").append(err).append("\n"));
+                saveErrors.forEach(err -> message.append("- ").append(err).append("\n"));
+            }
+
+            if (savedCount > 0) {
+                redirectAttributes.addFlashAttribute("success", message.toString());
+            } else {
+                redirectAttributes.addFlashAttribute("error", message.toString());
+            }
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi đọc file Excel: " + e.getMessage());
+        }
+        return "redirect:/admin/students";
+    }
+
     // ==================== CLASSES CRUD ====================
 
     @GetMapping("/classes")
@@ -396,5 +456,69 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Lỗi: " + e.getMessage());
         }
         return "redirect:/admin/classes/" + classId;
+    }
+
+    @PostMapping("/classes/{classId}/import-students")
+    public String importStudentsToClass(@PathVariable Long classId,
+            @RequestParam("file") MultipartFile file,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (file.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Vui lòng chọn file Excel!");
+                return "redirect:/admin/classes/detail/" + classId;
+            }
+
+            ClassEntity classEntity = classService.findByIdWithTeacher(classId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+
+            Map<String, Object> result = excelImportService.importStudentCodesFromExcel(file);
+            @SuppressWarnings("unchecked")
+            List<String> studentCodes = (List<String>) result.get("studentCodes");
+            @SuppressWarnings("unchecked")
+            List<String> errors = (List<String>) result.get("errors");
+
+            int addedCount = 0;
+            List<String> addErrors = new ArrayList<>();
+
+            for (String studentCode : studentCodes) {
+                try {
+                    User student = userService.findByStudentCode(studentCode)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy sinh viên mã " + studentCode));
+
+                    // Check if student already in class
+                    if (classEntity.getStudents().contains(student)) {
+                        addErrors.add("Mã SV " + studentCode + ": Đã có trong lớp");
+                        continue;
+                    }
+
+                    classService.addStudentToClass(classId, student.getId());
+                    addedCount++;
+                } catch (Exception e) {
+                    addErrors.add("Mã SV " + studentCode + ": " + e.getMessage());
+                }
+            }
+
+            // Build result message
+            StringBuilder message = new StringBuilder();
+            message.append("Import hoàn tất! ");
+            message.append("Đã thêm: ").append(addedCount).append(", ");
+            message.append("Lỗi: ").append(errors.size() + addErrors.size());
+
+            if (!errors.isEmpty() || !addErrors.isEmpty()) {
+                message.append("\n\nChi tiết lỗi:\n");
+                errors.forEach(err -> message.append("- ").append(err).append("\n"));
+                addErrors.forEach(err -> message.append("- ").append(err).append("\n"));
+            }
+
+            if (addedCount > 0) {
+                redirectAttributes.addFlashAttribute("success", message.toString());
+            } else {
+                redirectAttributes.addFlashAttribute("error", message.toString());
+            }
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Lỗi khi đọc file Excel: " + e.getMessage());
+        }
+        return "redirect:/admin/classes/detail/" + classId;
     }
 }

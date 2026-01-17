@@ -101,11 +101,7 @@ function initMap(lat, lng) {
     cachedLatitude = position.lat;
     cachedLongitude = position.lng;
 
-    console.log(
-      "🎯 Giáo viên đã chỉnh vị trí:",
-      cachedLatitude,
-      cachedLongitude
-    );
+    console.log(" Giáo viên đã chỉnh vị trí:", cachedLatitude, cachedLongitude);
 
     // Cập nhật popup với tọa độ mới
     marker.setPopupContent(
