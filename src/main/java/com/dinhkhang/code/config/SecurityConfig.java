@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -83,8 +84,12 @@ public class SecurityConfig {
                                                 .deleteCookies("JSESSIONID")
                                                 .permitAll())
                                 .exceptionHandling(ex -> ex
-                                                .accessDeniedPage("/access-denied"));
-                                //.csrf(csrf -> csrf.disable()); // Disable CSRF for all endpoints
+                                                .accessDeniedPage("/access-denied"))
+                                .csrf(csrf -> csrf
+                                                // Disable CSRF for API endpoints (REST API không cần CSRF)
+                                                .ignoringRequestMatchers("/api/**")
+                                                // Enable CSRF cho web forms với cookie-based token
+                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()));
 
                 return http.build();
         }
