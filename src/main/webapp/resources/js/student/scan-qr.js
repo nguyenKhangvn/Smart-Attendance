@@ -65,62 +65,63 @@ async function initCamera() {
 }
 
 async function captureSelfie() {
-    const video = document.getElementById("preview");
-    const canvas = document.getElementById("canvas");
+  const video = document.getElementById("preview");
+  const canvas = document.getElementById("canvas");
 
-    // 1. CẤU HÌNH BẮT BUỘC CHO MOBILE (Fix lỗi màn hình đen iOS/Android)
-    video.muted = true;       // Bắt buộc phải tắt tiếng mới cho autoplay
-    video.playsInline = true; // Bắt buộc để không phóng to màn hình trên iOS
-    
-    // 2. ÉP CHẠY VIDEO NẾU ĐANG DỪNG
-    if (video.paused || video.ended) {
-        try {
-            await video.play();
-        } catch (e) {
-            console.warn("Auto-play blocked, trying again...", e);
-        }
+  video.muted = true; // Bắt buộc phải tắt tiếng mới cho autoplay
+  video.playsInline = true; // Bắt buộc để không phóng to màn hình trên iOS
+
+  // 2. ÉP CHẠY VIDEO NẾU ĐANG DỪNG
+  if (video.paused || video.ended) {
+    try {
+      await video.play();
+    } catch (e) {
+      console.warn("Auto-play blocked, trying again...", e);
     }
+  }
 
-    // 3. LOGIC CHỜ CAMERA (Đã tối ưu)
-    // Chỉ cần readyState >= 2 (HAVE_CURRENT_DATA) là đủ chụp, không cần chờ đến 4
-    let waitCount = 0;
-    const MAX_WAIT = 60; // 6 giây
+  // 3. LOGIC CHỜ CAMERA (Đã tối ưu)
+  // Chỉ cần readyState >= 2 (HAVE_CURRENT_DATA) là đủ chụp, không cần chờ đến 4
+  let waitCount = 0;
+  const MAX_WAIT = 60; // 6 giây
 
-    while (
-        (video.readyState < 2 || video.videoWidth === 0) && 
-        waitCount < MAX_WAIT
-    ) {
-        await new Promise((resolve) => setTimeout(resolve, 100)); // Đợi 100ms
-        waitCount++;
-        
-        // Cứ mỗi 1 giây (10 lần lặp) lại thử ép play 1 lần cho chắc
-        if (waitCount % 10 === 0) {
-            video.play().catch(() => {});
-        }
+  while (
+    (video.readyState < 2 || video.videoWidth === 0) &&
+    waitCount < MAX_WAIT
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, 100)); // Đợi 100ms
+    waitCount++;
+
+    // Cứ mỗi 1 giây (10 lần lặp) lại thử ép play 1 lần cho chắc
+    if (waitCount % 10 === 0) {
+      video.play().catch(() => {});
     }
+  }
 
-    // 4. CHECK LẦN CUỐI
-    if (video.videoWidth === 0 || video.videoHeight === 0) {
-        // Fallback: Chờ thêm 0.5s may rủi
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        
-        if (video.videoWidth === 0) {
-             throw new Error("Lỗi Camera: Không nhận được hình ảnh. Hãy kiểm tra quyền hoặc tải lại trang!");
-        }
+  // 4. CHECK LẦN CUỐI
+  if (video.videoWidth === 0 || video.videoHeight === 0) {
+    // Chờ thêm 0.5s
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    if (video.videoWidth === 0) {
+      throw new Error(
+        "Lỗi Camera: Không nhận được hình ảnh. Hãy kiểm tra quyền hoặc tải lại trang!",
+      );
     }
+  }
 
-    // 5. VẼ LÊN CANVAS
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    
-    // Lật ảnh (Mirror) cho giống gương
-    ctx.translate(canvas.width, 0);
-    ctx.scale(-1, 1);
-    
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-    return canvas.toDataURL("image/jpeg", 0.9);
+  // 5. VẼ LÊN CANVAS
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+
+  // Lật ảnh (Mirror) cho giống gương
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  return canvas.toDataURL("image/jpeg", 0.9);
 }
 
 // ===== 3. QR SCANNER =====
@@ -135,7 +136,7 @@ function initQRScanner() {
             cameraId,
             { fps: 10, qrbox: { width: 250, height: 250 } },
             onScanSuccess,
-            onScanFailure
+            onScanFailure,
           )
           .catch((err) => console.error("Start failed:", err));
       } else {
@@ -157,27 +158,32 @@ function onScanSuccess(decodedText, decodedResult) {
   }
 
   // 1. DỪNG CAMERA QUÉT QR - QUAN TRỌNG NHẤT LÀ DÒNG NÀY
-  html5QrCode.stop().then(() => {
-    $("#reader").hide(); // Ẩn khung quét QR
-    $("#preview").show(); // Hiện video selfie
-    
-    // 2. BÂY GIỜ MỚI KHỞI ĐỘNG CAMERA SELFIE
-    showResult("Đang bật camera xác thực...", "info");
-    
-    // Gọi hàm initCamera để bật cam trước
-    initCamera().then(() => {
-      // Cam trước đã lên, bắt đầu lấy GPS và gửi dữ liệu
-      showResult("🛰️ Đang định vị GPS chính xác...", "info");
-      getGPSWithNoiseFilter(qrData.sessionId, qrData.token, 1);
-    }).catch(err => {
-      showResult("Không thể bật camera selfie: " + err.message, "danger");
+  html5QrCode
+    .stop()
+    .then(() => {
+      $("#reader").hide(); // Ẩn khung quét QR
+      $("#preview").show(); // Hiện video selfie
+
+      // 2. BÂY GIỜ MỚI KHỞI ĐỘNG CAMERA SELFIE
+      showResult("Đang bật camera xác thực...", "info");
+
+      // Gọi hàm initCamera để bật cam trước
+      initCamera()
+        .then(() => {
+          // Cam trước đã lên, bắt đầu lấy GPS và gửi dữ liệu
+          showResult("Đang định vị GPS chính xác...", "info");
+          getGPSWithNoiseFilter(qrData.sessionId, qrData.token, 1);
+        })
+        .catch((err) => {
+          showResult("Không thể bật camera selfie: " + err.message, "danger");
+          setTimeout(() => location.reload(), 3000);
+        });
+    })
+    .catch((err) => {
+      console.error("Failed to stop QR scanner", err);
+      showResult("Lỗi dừng camera quét. Vui lòng thử lại!", "danger");
       setTimeout(() => location.reload(), 3000);
     });
-  }).catch((err) => {
-    console.error("Failed to stop QR scanner", err);
-    showResult("Lỗi dừng camera quét. Vui lòng thử lại!", "danger");
-    setTimeout(() => location.reload(), 3000);
-  });
 }
 
 function onScanFailure(error) {
@@ -206,15 +212,15 @@ function getGPSWithNoiseFilter(qrId, tokenSecret, attempt) {
           tokenSecret,
           position.coords.latitude,
           position.coords.longitude,
-          accuracy
+          accuracy,
         );
       } else if (attempt < MAX_ATTEMPTS) {
         // GPS nhiễu -> Thử lại
         showResult(
-          `📡 Tín hiệu yếu (Sai số ${Math.round(
-            accuracy
+          `Tín hiệu yếu (Sai số ${Math.round(
+            accuracy,
           )}m). Đang tinh chỉnh lần ${attempt}...`,
-          "warning"
+          "warning",
         );
         setTimeout(() => {
           getGPSWithNoiseFilter(qrId, tokenSecret, attempt + 1);
@@ -227,7 +233,7 @@ function getGPSWithNoiseFilter(qrId, tokenSecret, attempt) {
           tokenSecret,
           position.coords.latitude,
           position.coords.longitude,
-          accuracy
+          accuracy,
         );
       }
     },
@@ -236,14 +242,14 @@ function getGPSWithNoiseFilter(qrId, tokenSecret, attempt) {
       if (attempt < MAX_ATTEMPTS) {
         setTimeout(
           () => getGPSWithNoiseFilter(qrId, tokenSecret, attempt + 1),
-          1500
+          1500,
         );
       } else {
         // Hết lượt -> Hiện hướng dẫn bật lại GPS
         handleGPSError(error);
       }
     },
-    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 },
   );
 }
 
@@ -329,7 +335,7 @@ async function checkPermissionsAndInit() {
           runApp();
         }
       },
-      { timeout: 4000 }
+      { timeout: 4000 },
     );
   } catch (e) {
     showStrictError("Lỗi khởi tạo: " + e.message);
@@ -349,13 +355,13 @@ async function performCheckIn(
   tokenSecret,
   latitude,
   longitude,
-  gpsAccuracy
+  gpsAccuracy,
 ) {
   try {
-    showResult("📸 Đang chụp ảnh xác thực...", "info");
+    showResult("Đang chụp ảnh xác thực...", "info");
     const imageData = await captureSelfie();
 
-    showResult("⏳ Đang gửi dữ liệu...", "info");
+    showResult("Đang gửi dữ liệu...", "info");
     const compressedImage = await compressImage(imageData, 640, 0.7);
     const deviceUid = getOrCreateDeviceUUID();
 
@@ -404,16 +410,16 @@ function sendCheckInRequest(payload) {
           response.message.includes("duyệt") ||
           response.message.includes("review")
         ) {
-          showResult("⚠️ " + response.message, "warning");
+          showResult("dont " + response.message, "warning");
         } else {
-          showResult("✅ " + response.message, "success");
+          showResult("ok " + response.message, "success");
         }
         setTimeout(
           () => (window.location.href = `/${contextPath}/student/dashboard`),
-          2500
+          2500,
         );
       } else {
-        showResult("❌ " + response.message, "danger");
+        showResult("Dont " + response.message, "danger");
         setTimeout(() => location.reload(), 4000);
       }
     },
@@ -425,7 +431,7 @@ function sendCheckInRequest(payload) {
           xhr.responseJSON && xhr.responseJSON.message
             ? xhr.responseJSON.message
             : "Lỗi server";
-        showResult("❌ " + msg, "danger");
+        showResult("Dont " + msg, "danger");
         setTimeout(() => location.reload(), 4000);
       }
     },
@@ -435,7 +441,10 @@ function sendCheckInRequest(payload) {
 // Offline Sync
 function saveOffline(payload) {
   localStorage.setItem("offline_attendance", JSON.stringify(payload));
-  showResult("⚠️ Mất mạng! Dữ liệu đã lưu, sẽ tự gửi khi có mạng.", "warning");
+  showResult(
+    "warrrrr Mất mạng! Dữ liệu đã lưu, sẽ tự gửi khi có mạng.",
+    "warning",
+  );
   window.addEventListener("online", () => {
     const saved = localStorage.getItem("offline_attendance");
     if (saved) sendCheckInRequest(JSON.parse(saved));
@@ -454,7 +463,7 @@ function showStrictError(msg) {
   showResult(
     msg +
       ` <br><button class="btn btn-sm btn-outline-danger mt-2" onclick="location.reload()">Thử lại</button>`,
-    "danger"
+    "danger",
   );
 }
 

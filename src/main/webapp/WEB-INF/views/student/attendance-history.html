@@ -83,11 +83,11 @@
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-table me-2"></i>Chi tiết các buổi học
                     </h6>
-                    
+
                     <div class="search-wrapper">
                         <i class="fas fa-search search-icon"></i>
                         <input type="text" id="searchInput" class="form-control search-input"
-                               placeholder="Tìm môn học, lớp...">
+                            placeholder="Tìm môn học, lớp...">
                     </div>
                 </div>
 
@@ -106,78 +106,88 @@
                             </thead>
                             <tbody>
                                 <tr th:each="record, iterStat : ${records}">
-                                    <td class="ps-4 fw-bold text-muted" 
+                                    <td class="ps-4 fw-bold text-muted"
                                         th:text="${(recordsPage.number * recordsPage.size) + iterStat.count}">1</td>
-                                    
+
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <a th:href="@{/student/classes/{id}(id=${record.session.classEntity.id})}"
-                                               class="subject-title mb-1">
-                                                <span th:text="${record.session.classEntity.classCode}">CODE</span>
+                                            <a th:href="@{/student/classes/{id}(id=${record.classSession.classEntity.id})}"
+                                                class="subject-title mb-1">
+                                                <span th:text="${record.classSession.classEntity.classCode}">CODE</span>
                                             </a>
-                                            <span class="subject-subtitle" 
-                                                  th:text="${record.session.classEntity.subjectName}">Subject Name</span>
+                                            <span class="subject-subtitle"
+                                                th:text="${record.classSession.classEntity.subjectName}">Subject
+                                                Name</span>
                                         </div>
                                     </td>
 
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="bg-light rounded p-2 me-2 text-center" style="min-width: 50px;">
-                                                <span class="d-block small fw-bold text-dark" 
-                                                      th:text="${#temporals.format(record.checkedInAt, 'dd')}">01</span>
+                                                <span class="d-block small fw-bold text-dark"
+                                                    th:text="${#temporals.format(record.checkedInAt, 'dd')}">01</span>
                                                 <span class="d-block small text-muted" style="font-size: 0.7rem;"
-                                                      th:text="${#temporals.format(record.checkedInAt, 'MMM')}">JAN</span>
+                                                    th:text="${#temporals.format(record.checkedInAt, 'MMM')}">JAN</span>
                                             </div>
                                             <div>
                                                 <span class="d-block fw-bold text-dark" style="font-size: 0.9rem;"
-                                                      th:text="${#temporals.format(record.checkedInAt, 'HH:mm')}"></span>
-                                                <span class="small text-muted" 
-                                                      th:text="${#temporals.format(record.checkedInAt, 'EEEE')}">Monday</span>
+                                                    th:text="${#temporals.format(record.checkedInAt, 'HH:mm')}"></span>
+                                                <span class="small text-muted"
+                                                    th:text="${#temporals.format(record.checkedInAt, 'EEEE')}">Monday</span>
                                             </div>
                                         </div>
                                     </td>
 
                                     <td>
                                         <span class="badge bg-light text-secondary border">
-                                            <span th:text="${record.session.sessionName}">Session 1</span>
+                                            <span th:text="${record.classSession.sessionName}">Session 1</span>
                                         </span>
                                     </td>
 
                                     <td class="text-center">
-                                        <span th:if="${record.status.name() == 'SUCCESS'}" class="status-badge badge-soft-success">
+                                        <span th:if="${record.status.name() == 'SUCCESS'}"
+                                            class="status-badge badge-soft-success">
                                             <i class="fas fa-check-circle"></i> Có mặt
                                         </span>
-                                        <span th:if="${record.status.name() == 'LATE'}" class="status-badge badge-soft-warning">
+                                        <span th:if="${record.status.name() == 'LATE'}"
+                                            class="status-badge badge-soft-warning">
                                             <i class="fas fa-clock"></i> Đi muộn
                                         </span>
-                                        <span th:if="${record.status.name() == 'ABSENT'}" class="status-badge badge-soft-danger">
+                                        <span th:if="${record.status.name() == 'ABSENT'}"
+                                            class="status-badge badge-soft-danger">
                                             <i class="fas fa-times-circle"></i> Vắng
                                         </span>
-                                        <span th:if="${record.status.name() == 'FAILED_DISTANCE'}" class="status-badge badge-soft-secondary">
+                                        <span th:if="${record.status.name() == 'FAILED_DISTANCE'}"
+                                            class="status-badge badge-soft-secondary">
                                             <i class="fas fa-map-marker-alt"></i> Sai vị trí
                                         </span>
-                                        <span th:if="${record.status.name() == 'FAILED_FACE_VERIFICATION'}" class="status-badge badge-soft-danger">
+                                        <span th:if="${record.status.name() == 'FAILED_FACE_VERIFICATION'}"
+                                            class="status-badge badge-soft-danger">
                                             <i class="fas fa-user-slash"></i> Sai khuôn mặt
                                         </span>
-                                        <span th:if="${record.status.name() == 'PENDING_REVIEW'}" class="status-badge badge-soft-warning">
+                                        <span th:if="${record.status.name() == 'PENDING_REVIEW'}"
+                                            class="status-badge badge-soft-warning">
                                             <i class="fas fa-hourglass"></i> Chờ duyệt
                                         </span>
                                     </td>
 
                                     <td>
                                         <div class="small text-muted">
-                                            <i class="fas fa-globe me-1"></i> <span th:text="${record.ipAddress ?: 'N/A'}"></span>
+                                            <i class="fas fa-globe me-1"></i> <span
+                                                th:text="${record.ipAddress ?: 'N/A'}"></span>
                                         </div>
                                         <div class="small text-muted mt-1 fst-italic" th:if="${record.note}">
-                                            <i class="fas fa-sticky-note me-1"></i> <span th:text="${record.note}"></span>
+                                            <i class="fas fa-sticky-note me-1"></i> <span
+                                                th:text="${record.note}"></span>
                                         </div>
                                     </td>
                                 </tr>
-                                
+
                                 <tr th:if="${records.isEmpty()}">
                                     <td colspan="6" class="text-center py-5">
                                         <div class="py-4">
-                                            <i class="fas fa-clipboard-list text-gray-300 mb-3" style="font-size: 3rem; color: #e3e6f0;"></i>
+                                            <i class="fas fa-clipboard-list text-gray-300 mb-3"
+                                                style="font-size: 3rem; color: #e3e6f0;"></i>
                                             <p class="text-muted mb-0">Chưa có dữ liệu điểm danh nào.</p>
                                         </div>
                                     </td>
@@ -185,19 +195,21 @@
                             </tbody>
                         </table>
                     </div>
-                    
-                    <div class="card-footer bg-white border-0 py-3 d-flex flex-wrap align-items-center justify-content-between" 
-                         th:if="${!recordsPage.empty}">
-                        
+
+                    <div class="card-footer bg-white border-0 py-3 d-flex flex-wrap align-items-center justify-content-between"
+                        th:if="${!recordsPage.empty}">
+
                         <div class="small text-muted mb-2 mb-md-0">
-                             Hiển thị <span class="fw-bold text-dark" th:text="${(recordsPage.number * recordsPage.size) + 1}"></span> 
-                             đến <span class="fw-bold text-dark" th:text="${(recordsPage.number * recordsPage.size) + recordsPage.numberOfElements}"></span> 
-                             của <span class="fw-bold text-dark" th:text="${recordsPage.totalElements}"></span> kết quả
+                            Hiển thị <span class="fw-bold text-dark"
+                                th:text="${(recordsPage.number * recordsPage.size) + 1}"></span>
+                            đến <span class="fw-bold text-dark"
+                                th:text="${(recordsPage.number * recordsPage.size) + recordsPage.numberOfElements}"></span>
+                            của <span class="fw-bold text-dark" th:text="${recordsPage.totalElements}"></span> kết quả
                         </div>
 
                         <div class="d-flex align-items-center">
-                            <select class="form-select form-select-sm me-3 border-0 bg-light" style="width: auto; cursor: pointer;"
-                                onchange="changePageSize(this.value)">
+                            <select class="form-select form-select-sm me-3 border-0 bg-light"
+                                style="width: auto; cursor: pointer;" onchange="changePageSize(this.value)">
                                 <option th:value="5" th:selected="${pageSize == 5}">5 / trang</option>
                                 <option th:value="10" th:selected="${pageSize == 10}">10 / trang</option>
                                 <option th:value="20" th:selected="${pageSize == 20}">20 / trang</option>
@@ -206,17 +218,19 @@
                             <nav aria-label="Page navigation">
                                 <ul class="pagination pagination-sm mb-0">
                                     <li class="page-item" th:classappend="${!recordsPage.hasPrevious()} ? 'disabled'">
-                                        <a class="page-link" th:href="${recordsPage.hasPrevious()} ? @{'/student/attendance-history'(page=${recordsPage.number - 1}, size=${pageSize})} : '#'">
+                                        <a class="page-link"
+                                            th:href="${recordsPage.hasPrevious()} ? @{'/student/attendance-history'(page=${recordsPage.number - 1}, size=${pageSize})} : '#'">
                                             <i class="fas fa-chevron-left"></i>
                                         </a>
                                     </li>
-                                    
+
                                     <li class="page-item active">
                                         <span class="page-link" th:text="${recordsPage.number + 1}">1</span>
                                     </li>
 
                                     <li class="page-item" th:classappend="${!recordsPage.hasNext()} ? 'disabled'">
-                                        <a class="page-link" th:href="${recordsPage.hasNext()} ? @{'/student/attendance-history'(page=${recordsPage.number + 1}, size=${pageSize})} : '#'">
+                                        <a class="page-link"
+                                            th:href="${recordsPage.hasNext()} ? @{'/student/attendance-history'(page=${recordsPage.number + 1}, size=${pageSize})} : '#'">
                                             <i class="fas fa-chevron-right"></i>
                                         </a>
                                     </li>
@@ -229,4 +243,5 @@
         </div>
     </div>
 </body>
+
 </html>

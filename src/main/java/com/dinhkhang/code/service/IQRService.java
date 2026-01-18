@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 public interface IQRService {
     QRSessionDTO generateQRSession(Long sessionId, BigDecimal teacherLat, BigDecimal teacherLong,
-            Double expirationMinutes, Integer maxDistanceMeters);
+            double expirationMinutes, int maxDistanceMeters);
 
     QRSession validateQRSession(Long qrId, String tokenSecret);
 

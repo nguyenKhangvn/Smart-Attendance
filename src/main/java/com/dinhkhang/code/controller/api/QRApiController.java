@@ -19,12 +19,12 @@ public class QRApiController {
     public ResponseEntity<QRSessionDTO> generateQR(
             @RequestParam Long sessionId,
             @RequestParam BigDecimal latitude,
-            @RequestParam BigDecimal longitude,
-            // SỬA Ở ĐÂY: Dùng Double thay vì Integer để nhận 0.35 phút
-            @RequestParam(required = false, defaultValue = "5.0") Double expirationMinutes,
-            @RequestParam(required = false, defaultValue = "50") Integer maxDistanceMeters) {
+            @RequestParam BigDecimal longitude) {
 
-        // Gọi Service (Bạn cũng phải sửa tham số trong Interface IQRService nhé)
+        // Hardcode giá trị bảo mật ở server, không nhận từ client
+        double expirationMinutes = 0.35; // ~20 giây
+        int maxDistanceMeters = 50; // 50 mét
+
         QRSessionDTO qrSession = qrService.generateQRSession(
                 sessionId, latitude, longitude, expirationMinutes, maxDistanceMeters);
 

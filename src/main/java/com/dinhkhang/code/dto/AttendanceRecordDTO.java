@@ -20,6 +20,17 @@ public class AttendanceRecordDTO {
     // Nested DTOs
     private StudentDTO student;
 
+    // Thêm trường session cho Thymeleaf truy cập
+    private ClassSessionDTO session;
+
+    public ClassSessionDTO getSession() {
+        return session;
+    }
+
+    public void setSession(ClassSessionDTO session) {
+        this.session = session;
+    }
+
     // Constructors
     public AttendanceRecordDTO() {
     }

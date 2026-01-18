@@ -26,7 +26,7 @@ import java.util.Properties;
 @ComponentScan(basePackages = "com.dinhkhang.code", excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = Controller.class))
 @EnableJpaRepositories(basePackages = "com.dinhkhang.code.repository")
 @EnableTransactionManagement
-@EnableScheduling  // Enable scheduled tasks
+@EnableScheduling // Enable scheduled tasks
 @PropertySource("classpath:application.properties")
 public class AppConfig {
 
@@ -47,6 +47,11 @@ public class AppConfig {
         config.setConnectionTimeout(Long.parseLong(env.getProperty("db.pool.connection-timeout", "30000")));
         config.setIdleTimeout(Long.parseLong(env.getProperty("db.pool.idle-timeout", "600000")));
         config.setMaxLifetime(Long.parseLong(env.getProperty("db.pool.max-lifetime", "1800000")));
+
+        // Disable prepared statements to avoid PostgreSQL naming conflicts
+        Properties dsProps = new Properties();
+        dsProps.setProperty("prepareThreshold", "0");
+        config.setDataSourceProperties(dsProps);
 
         return new HikariDataSource(config);
     }
@@ -74,6 +79,10 @@ public class AppConfig {
         properties.put("hibernate.jdbc.batch_size", env.getProperty("hibernate.jdbc.batch_size", "20"));
         properties.put("hibernate.order_inserts", "true");
         properties.put("hibernate.order_updates", "true");
+
+        // Disable server-side prepared statements to avoid PostgreSQL naming conflicts
+        properties.put("hibernate.jdbc.use_server_side_prepared_statements", "false");
+
         return properties;
     }
 

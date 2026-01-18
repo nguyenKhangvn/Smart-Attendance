@@ -35,7 +35,7 @@ public class QRService implements IQRService {
 
     @Override
     public QRSessionDTO generateQRSession(Long sessionId, BigDecimal teacherLat, BigDecimal teacherLong,
-            Double expirationMinutes, Integer maxDistanceMeters) { // <--- SỬA: Double
+            double expirationMinutes, int maxDistanceMeters) {
 
         ClassSession classSession = classSessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Class session not found"));
@@ -58,18 +58,16 @@ public class QRService implements IQRService {
         qrSession.setClassSession(classSession);
 
         // ===== LOGIC TÍNH THỜI GIAN MỚI (Hỗ trợ số lẻ 0.35 phút) =====
-        double minutesToAdd = (expirationMinutes != null) ? expirationMinutes : 5.0;
 
-        // Đổi ra giây: 0.35 phút * 60 = 21 giây
-        long secondsToAdd = (long) (minutesToAdd * 60);
+        // Đổi ra giây: expirationMinutes * 60
+        long secondsToAdd = (long) (expirationMinutes * 60);
 
         // Cộng thời gian vào thời điểm hiện tại
         ZonedDateTime expiredTimeZoned = ZonedDateTime.now(VIETNAM_ZONE).plusSeconds(secondsToAdd);
 
         // Lưu vào Entity
         qrSession.setExpiredAt(expiredTimeZoned.toLocalDateTime());
-
-        qrSession.setMaxDistanceMeters(maxDistanceMeters != null ? maxDistanceMeters : 50);
+        qrSession.setMaxDistanceMeters(maxDistanceMeters);
 
         qrSession = qrSessionRepository.save(qrSession);
 

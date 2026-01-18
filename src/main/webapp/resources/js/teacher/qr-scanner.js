@@ -34,7 +34,7 @@ function initGPSAndStart() {
         cachedLatitude = position.coords.latitude;
         cachedLongitude = position.coords.longitude;
 
-        console.log("📍 GPS Locked:", cachedLatitude, cachedLongitude);
+        console.log(" GPS Locked:", cachedLatitude, cachedLongitude);
         $("#qrStatus").text("Đã có vị trí. Đang hiển thị bản đồ...");
 
         // HIỂN THỊ BẢN ĐỒ ĐỂ GIÁO VIÊN XÁC NHẬN/CHỈNH VỊ TRÍ
@@ -48,7 +48,7 @@ function initGPSAndStart() {
         alert("Không thể lấy vị trí. Vui lòng bật GPS và tải lại trang!");
         $("#qrStatus").text("Lỗi GPS - Không thể tạo mã.");
       },
-      { enableHighAccuracy: true } // Lấy chính xác cao cho giáo viên
+      { enableHighAccuracy: true }, // Lấy chính xác cao cho giáo viên
     );
   } else {
     alert("Trình duyệt không hỗ trợ Geolocation!");
@@ -89,7 +89,7 @@ function initMap(lat, lng) {
         lat.toFixed(6) +
         ", " +
         lng.toFixed(6) +
-        "</small>"
+        "</small>",
     )
     .openPopup();
 
@@ -110,13 +110,13 @@ function initMap(lat, lng) {
         cachedLatitude.toFixed(6) +
         ", " +
         cachedLongitude.toFixed(6) +
-        "</small>"
+        "</small>",
     );
 
     // Thông báo cho giáo viên
     $("#qrStatus").html(
       '<i class="fas fa-check-circle text-success"></i> ' +
-        "Đã cập nhật vị trí mới! Mã QR sẽ dùng vị trí này."
+        "Đã cập nhật vị trí mới! Mã QR sẽ dùng vị trí này.",
     );
 
     // Tùy chọn: Tự động tạo lại QR ngay khi kéo xong
@@ -151,14 +151,10 @@ function generateQRCode() {
       sessionId: sessionId, // Biến này từ Thymeleaf
       latitude: cachedLatitude, // Dùng tọa độ đã cache
       longitude: cachedLongitude,
-      // QUAN TRỌNG: Token chỉ sống lâu hơn thời gian refresh một chút
-      // Refresh 10s -> Token sống 20s (để trừ hao lag mạng cho sinh viên)
-      expirationMinutes: 0.35, // ~20 giây (Backend nên hỗ trợ nhận param giây thì tốt hơn)
-      maxDistanceMeters: 50,
     },
     success: function (response) {
       $("#qrCode").html(
-        `<img src="${response.qrCodeBase64}" class="img-fluid" alt="QR Code" style="max-height: 400px;">`
+        `<img src="${response.qrCodeBase64}" class="img-fluid" alt="QR Code" style="max-height: 400px;">`,
       );
 
       // Reset thanh thời gian

@@ -14,28 +14,34 @@ import java.util.Optional;
 @Repository
 public interface QRSessionRepository extends JpaRepository<QRSession, Long> {
 
-    Optional<QRSession> findByTokenSecret(String tokenSecret);
+        // Tìm các session đang Active nhưng đã hết hạn (DB tự lọc)
+        List<QRSession> findByIsActiveTrueAndExpiredAtBefore(LocalDateTime now);
 
-    List<QRSession> findByClassSession(ClassSession classSession);
+        // Đếm số lượng Active (DB tự đếm trả về 1 số long, không tải dữ liệu)
+        long countByIsActiveTrueAndExpiredAtAfter(LocalDateTime now);
 
-    @Query("SELECT q FROM QRSession q WHERE q.classSession = :classSession " +
-            "AND q.isActive = true AND q.expiredAt > :now " +
-            "ORDER BY q.createdAt DESC")
-    List<QRSession> findActiveQRSessionsByClassSession(
-            @Param("classSession") ClassSession classSession,
-            @Param("now") LocalDateTime now);
+        Optional<QRSession> findByTokenSecret(String tokenSecret);
 
-    @Query("SELECT q FROM QRSession q WHERE q.tokenSecret = :tokenSecret " +
-            "AND q.isActive = true AND q.expiredAt > :now")
-    Optional<QRSession> findValidQRSession(
-            @Param("tokenSecret") String tokenSecret,
-            @Param("now") LocalDateTime now);
+        List<QRSession> findByClassSession(ClassSession classSession);
 
-    @Query("SELECT q FROM QRSession q WHERE q.classSession.id = :sessionId " +
-            "AND q.tokenSecret = :tokenSecret " +
-            "AND q.isActive = true AND q.expiredAt > :now")
-    Optional<QRSession> findValidQRSessionBySessionIdAndToken(
-            @Param("sessionId") Long sessionId,
-            @Param("tokenSecret") String tokenSecret,
-            @Param("now") LocalDateTime now);
+        @Query("SELECT q FROM QRSession q WHERE q.classSession = :classSession " +
+                        "AND q.isActive = true AND q.expiredAt > :now " +
+                        "ORDER BY q.createdAt DESC")
+        List<QRSession> findActiveQRSessionsByClassSession(
+                        @Param("classSession") ClassSession classSession,
+                        @Param("now") LocalDateTime now);
+
+        @Query("SELECT q FROM QRSession q WHERE q.tokenSecret = :tokenSecret " +
+                        "AND q.isActive = true AND q.expiredAt > :now")
+        Optional<QRSession> findValidQRSession(
+                        @Param("tokenSecret") String tokenSecret,
+                        @Param("now") LocalDateTime now);
+
+        @Query("SELECT q FROM QRSession q WHERE q.classSession.id = :sessionId " +
+                        "AND q.tokenSecret = :tokenSecret " +
+                        "AND q.isActive = true AND q.expiredAt > :now")
+        Optional<QRSession> findValidQRSessionBySessionIdAndToken(
+                        @Param("sessionId") Long sessionId,
+                        @Param("tokenSecret") String tokenSecret,
+                        @Param("now") LocalDateTime now);
 }

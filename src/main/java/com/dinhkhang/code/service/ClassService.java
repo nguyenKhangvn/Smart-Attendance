@@ -24,6 +24,7 @@ public class ClassService implements IClassService {
     @Autowired
     private UserRepository userRepository;
 
+    @Override
     public ClassEntity createClass(ClassEntity classEntity, Long teacherId) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -40,6 +41,7 @@ public class ClassService implements IClassService {
         return classRepository.save(classEntity);
     }
 
+    @Override
     public ClassEntity updateClass(Long id, ClassEntity updatedClass) {
         ClassEntity classEntity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -52,6 +54,7 @@ public class ClassService implements IClassService {
         return classRepository.save(classEntity);
     }
 
+    @Override
     public ClassEntity updateClass(Long id, ClassEntity updatedClass, Long teacherId) {
         ClassEntity classEntity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -69,29 +72,48 @@ public class ClassService implements IClassService {
         return classRepository.save(classEntity);
     }
 
-    public void addStudentToClass(Long classId, Long studentCode) {
-
+    @Override
+    public void addStudentToClass(Long classId, Long studentId) {
         ClassEntity classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
 
-        User student = userRepository.findByStudentCode(studentCode.toString())
-                .orElseThrow(() ->
-                        new RuntimeException("Student not found with code: " + studentCode.toString())
-                );
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
 
         if (student.getRole() != User.Role.STUDENT) {
             throw new RuntimeException("User is not a student");
         }
 
         if (classEntity.getStudents().contains(student)) {
-            return;
+            return; // Already exists
         }
 
         classEntity.getStudents().add(student);
         classRepository.save(classEntity);
     }
 
+    // SỬA: Đổi Long thành String cho studentCode để hỗ trợ mã dạng "HE14002"
+    public void addStudentToClass(Long classId, String studentCode) {
+        ClassEntity classEntity = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
 
+        User student = userRepository.findByStudentCode(studentCode)
+                .orElseThrow(() -> new RuntimeException("Student not found with code: " + studentCode));
+
+        if (student.getRole() != User.Role.STUDENT) {
+            throw new RuntimeException("User is not a student");
+        }
+
+        // Hibernate sẽ tải list students lên. Với lớp học nhỏ thì OK.
+        if (classEntity.getStudents().contains(student)) {
+            return; // Đã tồn tại thì thôi
+        }
+
+        classEntity.getStudents().add(student);
+        classRepository.save(classEntity);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public ClassEntity getClassDetail(Long id) {
         ClassEntity classEntity = classRepository.findByIdWithTeacher(id)
@@ -103,6 +125,7 @@ public class ClassService implements IClassService {
         return classEntity;
     }
 
+    @Override
     public void removeStudentFromClass(Long classId, Long studentId) {
         ClassEntity classEntity = classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -114,22 +137,26 @@ public class ClassService implements IClassService {
         classRepository.save(classEntity);
     }
 
+    @Override
     public Optional<ClassEntity> findById(Long id) {
         return classRepository.findById(id);
     }
 
+    @Override
     public List<ClassEntity> getClassesByTeacher(Long teacherId) {
         User teacher = userRepository.findById(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
         return classRepository.findByTeacherAndIsActive(teacher, true);
     }
 
+    @Override
     public List<ClassEntity> getClassesByStudent(Long studentId) {
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
         return classRepository.findActiveClassesByStudent(student);
     }
 
+    @Override
     public void deleteClass(Long id) {
         ClassEntity classEntity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -137,6 +164,7 @@ public class ClassService implements IClassService {
         classRepository.save(classEntity);
     }
 
+    @Override
     public void deleteClass(Long id, Long teacherId) {
         ClassEntity classEntity = classRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Class not found"));
@@ -178,9 +206,25 @@ public class ClassService implements IClassService {
         classRepository.save(classEntity);
     }
 
+    // SỬA LỖI PHÂN TRANG (Quan trọng nhất)
     @Override
     @Transactional(readOnly = true)
     public Page<ClassEntity> getAllClasses(Pageable pageable) {
-        return classRepository.findAllWithTeacherAndStudents(pageable);
+        // Cần đảm bảo Repository có hàm này (Không fetch students)
+        // Nếu chưa có, hãy vào ClassRepository thêm hàm bên dưới
+        return classRepository.findAllWithTeacherOnly(pageable);
+    }
+
+    @Override
+    public long countStudentsInClass(Long classId) {
+        ClassEntity classEntity = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lớp học"));
+        return classEntity.getStudents() != null ? classEntity.getStudents().size() : 0;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ClassEntity> findAllWithTeacherOnly(Pageable pageable) {
+        return classRepository.findAllWithTeacherOnly(pageable);
     }
 }

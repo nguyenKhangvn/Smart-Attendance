@@ -114,9 +114,8 @@ public class SecureAttendanceService {
             }
 
             // =================================================================================
-            // PHASE 2: UPLOAD ẢNH TRƯỚC (QUAN TRỌNG: Để có bằng chứng đối soát)
+            // PHASE 2: UPLOAD ẢNH
             // =================================================================================
-            // Thay đổi chiến thuật: Upload luôn để lưu bằng chứng, kể cả khi GPS sai
 
             // Validate ảnh local trước cho nhanh
             if (!faceRecognitionService.validateBase64Image(request.getSelfieBase64())) {
@@ -215,7 +214,6 @@ public class SecureAttendanceService {
         }
     }
 
-    // ... (Các hàm findUser, checkIpInNetwork, calculateDistance giữ nguyên) ...
     private User findUser(String identifier) {
         return userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))

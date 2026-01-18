@@ -80,7 +80,7 @@
                                         <td>
                                             <span class="badge bg-secondary">
                                                 <i class="fas fa-users me-1"></i>
-                                                <span th:text="${classEntity.students.size()}"></span>
+                                                <span th:text="${studentCounts[classEntity.id]}"></span>
                                             </span>
                                         </td>
                                         <td>
@@ -153,7 +153,7 @@
                         tác!</p>
                 </div>
                 <div class="modal-footer">
-                    <form id="deleteForm" method="post">
+                    <form id="deleteForm" method="post" th:action="@{/admin/classes/delete/__ID__}">
                         <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
                         <button type="submit" class="btn btn-danger">Xóa</button>
@@ -172,7 +172,7 @@
             const className = button.getAttribute('data-class-name');
 
             document.getElementById('deleteClassName').textContent = className;
-            document.getElementById('deleteForm').action = '/admin/classes/delete/' + classId;
+            document.getElementById('deleteForm').setAttribute('action', '/admin/classes/delete/' + classId);
 
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         }

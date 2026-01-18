@@ -39,4 +39,8 @@ public interface IClassService {
     void deactivateClass(Long id);
 
     Optional<ClassEntity> findByIdWithTeacher(Long id);
+
+    Page<ClassEntity> findAllWithTeacherOnly(Pageable pageable);
+
+    long countStudentsInClass(Long classId);
 }

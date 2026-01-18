@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -318,7 +320,12 @@ public class AdminController {
             @RequestParam(defaultValue = "asc") String sortDir) {
         Page<ClassEntity> classPage = classService
                 .getAllClasses(paginationService.createPageable(page, size, sortBy, sortDir));
+        Map<Long, Long> studentCounts = new HashMap<>();
+        for (ClassEntity classEntity : classPage.getContent()) {
+            studentCounts.put(classEntity.getId(), classService.countStudentsInClass(classEntity.getId()));
+        }
         model.addAttribute("classPage", classPage);
+        model.addAttribute("studentCounts", studentCounts);
         model.addAttribute("currentPage", page);
         model.addAttribute("pageSize", size);
         model.addAttribute("sortBy", sortBy);
